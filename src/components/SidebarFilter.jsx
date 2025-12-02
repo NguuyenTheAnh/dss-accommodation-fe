@@ -1,172 +1,147 @@
-import { Tag, Button } from 'antd';
-import { CloseCircleOutlined, FilterOutlined } from '@ant-design/icons';
+import { Button, Slider, Select, Rate, Divider } from 'antd';
+import { FilterOutlined, ReloadOutlined } from '@ant-design/icons';
 import './SidebarFilter.css';
 
-const SidebarFilter = ({ filters = {}, onRemoveFilter, onClearAll, onOpenModal }) => {
-    const hasFilters = Object.keys(filters).some(key => {
-        const value = filters[key];
-        if (Array.isArray(value)) return value.length > 0;
-        return value !== undefined && value !== null && value !== 0;
-    });
+const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
+    const roomTypes = [
+        { value: 'single', label: 'Phòng đơn' },
+        { value: 'double', label: 'Phòng đôi' },
+        { value: 'apartment', label: 'Chung cư mini' },
+        { value: 'house', label: 'Nhà nguyên căn' }
+    ];
+
+    const amenitiesList = [
+        { value: 'wifi', label: 'WiFi' },
+        { value: 'parking', label: 'Chỗ đậu xe' },
+        { value: 'ac', label: 'Điều hòa' },
+        { value: 'washing', label: 'Máy giặt' },
+        { value: 'kitchen', label: 'Bếp' },
+        { value: 'security', label: 'An ninh 24/7' }
+    ];
 
     const formatPrice = (value) => {
         return `${(value / 1000000).toFixed(1)}tr`;
     };
 
-    const renderFilterTags = () => {
-        const tags = [];
-
-        // Price Range
-        if (filters.priceRange && (filters.priceRange[0] !== 1000000 || filters.priceRange[1] !== 10000000)) {
-            tags.push(
-                <Tag
-                    key="price"
-                    closable
-                    onClose={() => onRemoveFilter('priceRange')}
-                    className="filter-tag"
-                >
-                    Giá: {formatPrice(filters.priceRange[0])} - {formatPrice(filters.priceRange[1])}
-                </Tag>
-            );
+    const handleFilterUpdate = (key, value) => {
+        if (onFilterChange) {
+            onFilterChange({ ...filters, [key]: value });
         }
-
-        // Distance
-        if (filters.distance && filters.distance !== 5) {
-            tags.push(
-                <Tag
-                    key="distance"
-                    closable
-                    onClose={() => onRemoveFilter('distance')}
-                    className="filter-tag"
-                >
-                    Khoảng cách: ≤ {filters.distance}km
-                </Tag>
-            );
-        }
-
-        // Area Range
-        if (filters.areaRange && (filters.areaRange[0] !== 15 || filters.areaRange[1] !== 50)) {
-            tags.push(
-                <Tag
-                    key="area"
-                    closable
-                    onClose={() => onRemoveFilter('areaRange')}
-                    className="filter-tag"
-                >
-                    Diện tích: {filters.areaRange[0]}m² - {filters.areaRange[1]}m²
-                </Tag>
-            );
-        }
-
-        // Rating
-        if (filters.rating && filters.rating > 0) {
-            tags.push(
-                <Tag
-                    key="rating"
-                    closable
-                    onClose={() => onRemoveFilter('rating')}
-                    className="filter-tag"
-                >
-                    Đánh giá: ≥ {filters.rating}⭐
-                </Tag>
-            );
-        }
-
-        // Room Type
-        if (filters.roomType) {
-            const roomTypeLabels = {
-                'single': 'Phòng đơn',
-                'double': 'Phòng đôi',
-                'apartment': 'Chung cư mini',
-                'house': 'Nhà nguyên căn'
-            };
-            tags.push(
-                <Tag
-                    key="roomType"
-                    closable
-                    onClose={() => onRemoveFilter('roomType')}
-                    className="filter-tag"
-                >
-                    {roomTypeLabels[filters.roomType]}
-                </Tag>
-            );
-        }
-
-        // Amenities
-        if (filters.amenities && filters.amenities.length > 0) {
-            const amenityLabels = {
-                'wifi': 'WiFi',
-                'parking': 'Chỗ đậu xe',
-                'ac': 'Điều hòa',
-                'washing': 'Máy giặt',
-                'kitchen': 'Bếp',
-                'security': 'An ninh 24/7'
-            };
-
-            filters.amenities.forEach(amenity => {
-                tags.push(
-                    <Tag
-                        key={`amenity-${amenity}`}
-                        closable
-                        onClose={() => {
-                            const newAmenities = filters.amenities.filter(a => a !== amenity);
-                            onRemoveFilter('amenities', newAmenities);
-                        }}
-                        className="filter-tag"
-                    >
-                        {amenityLabels[amenity]}
-                    </Tag>
-                );
-            });
-        }
-
-        return tags;
-    };
-
-    return (
+    }; return (
         <div className="sidebar-filter">
             <div className="sidebar-filter-header">
                 <h3 className="sidebar-filter-title">
-                    <FilterOutlined /> Bộ lọc
+                    <FilterOutlined /> Bộ lọc tìm kiếm
                 </h3>
-                {hasFilters && (
-                    <Button
-                        type="text"
-                        size="small"
-                        onClick={onClearAll}
-                        className="clear-all-button"
-                        icon={<CloseCircleOutlined />}
-                    >
-                        Xóa tất cả
-                    </Button>
-                )}
+                <Button
+                    type="text"
+                    size="small"
+                    onClick={onReset}
+                    className="reset-button"
+                    icon={<ReloadOutlined />}
+                >
+                    Đặt lại
+                </Button>
             </div>
 
-            <div className="filter-tags-container">
-                {hasFilters ? (
-                    <>
-                        {renderFilterTags()}
-                        <Button
-                            block
-                            onClick={onOpenModal}
-                            className="edit-filter-button"
-                        >
-                            Chỉnh sửa bộ lọc
-                        </Button>
-                    </>
-                ) : (
-                    <div className="no-filters">
-                        <p>Chưa có bộ lọc nào được áp dụng</p>
-                        <Button
-                            type="primary"
-                            block
-                            onClick={onOpenModal}
-                            className="add-filter-button"
-                        >
-                            Thêm bộ lọc
-                        </Button>
+            <div className="filter-content">
+                {/* Price Range */}
+                <div className="filter-section">
+                    <label className="filter-label">Khoảng giá (VNĐ/tháng)</label>
+                    <Slider
+                        range
+                        min={500000}
+                        max={20000000}
+                        step={500000}
+                        value={filters.priceRange || [1000000, 10000000]}
+                        onChange={(value) => handleFilterUpdate('priceRange', value)}
+                        tooltip={{ formatter: formatPrice }}
+                        className="custom-slider"
+                    />
+                    <div className="range-display">
+                        {formatPrice((filters.priceRange || [1000000, 10000000])[0])} - {formatPrice((filters.priceRange || [1000000, 10000000])[1])}
                     </div>
-                )}
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Distance */}
+                <div className="filter-section">
+                    <label className="filter-label">Khoảng cách đến trường (km)</label>
+                    <Slider
+                        min={0}
+                        max={10}
+                        step={0.5}
+                        value={filters.distance || 5}
+                        onChange={(value) => handleFilterUpdate('distance', value)}
+                        marks={{ 0: '0km', 5: '5km', 10: '10km' }}
+                        className="custom-slider"
+                    />
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Area Range */}
+                <div className="filter-section">
+                    <label className="filter-label">Diện tích (m²)</label>
+                    <Slider
+                        range
+                        min={10}
+                        max={100}
+                        step={5}
+                        value={filters.areaRange || [15, 50]}
+                        onChange={(value) => handleFilterUpdate('areaRange', value)}
+                        className="custom-slider"
+                    />
+                    <div className="range-display">
+                        {(filters.areaRange || [15, 50])[0]}m² - {(filters.areaRange || [15, 50])[1]}m²
+                    </div>
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Rating */}
+                <div className="filter-section">
+                    <label className="filter-label">Đánh giá tối thiểu</label>
+                    <Rate
+                        value={filters.rating || 0}
+                        onChange={(value) => handleFilterUpdate('rating', value)}
+                        className="custom-rate"
+                    />
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Room Type */}
+                <div className="filter-section">
+                    <label className="filter-label">Loại phòng</label>
+                    <Select
+                        placeholder="Chọn loại phòng"
+                        options={roomTypes}
+                        value={filters.roomType}
+                        onChange={(value) => handleFilterUpdate('roomType', value)}
+                        className="filter-select"
+                        allowClear
+                        style={{ width: '100%' }}
+                    />
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Amenities */}
+                <div className="filter-section">
+                    <label className="filter-label">Tiện nghi</label>
+                    <Select
+                        mode="multiple"
+                        placeholder="Chọn tiện nghi"
+                        options={amenitiesList}
+                        value={filters.amenities || []}
+                        onChange={(value) => handleFilterUpdate('amenities', value)}
+                        className="filter-select"
+                        maxTagCount="responsive"
+                        style={{ width: '100%' }}
+                    />
+                </div>
             </div>
         </div>
     );
