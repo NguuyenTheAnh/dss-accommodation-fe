@@ -1,0 +1,18 @@
+.layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    margin-top: var(--header-height);
+    flex: 1;
+    background-color: var(--bg-white);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .main-content {
+        margin-top: 56px;
+    }
+}

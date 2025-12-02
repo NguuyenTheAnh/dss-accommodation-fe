@@ -7,7 +7,8 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import HomePage from './pages/home.jsx';
+import HomePage from './pages/HomePage.jsx';
+import SearchResultPage from './pages/SearchResultPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -18,10 +19,10 @@ const router = createBrowserRouter([
         index: true,
         element: <HomePage />
       },
-      // {
-      //   path: "user",
-      //   element: <UserPage />
-      // },
+      {
+        path: "search",
+        element: <SearchResultPage />
+      },
     ]
   },
 ]);

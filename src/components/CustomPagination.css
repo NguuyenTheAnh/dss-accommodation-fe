@@ -1,0 +1,106 @@
+.custom-pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-xxl) 0;
+}
+
+.custom-pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.custom-pagination .ant-pagination-item {
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+    min-width: 36px;
+    height: 36px;
+    line-height: 34px;
+    font-weight: var(--font-weight-medium);
+}
+
+.custom-pagination .ant-pagination-item:hover {
+    border-color: var(--primary-green);
+    transform: translateY(-2px);
+}
+
+.custom-pagination .ant-pagination-item a {
+    color: var(--text-primary);
+}
+
+.custom-pagination .ant-pagination-item:hover a {
+    color: var(--primary-green);
+}
+
+.custom-pagination .ant-pagination-item-active {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.custom-pagination .ant-pagination-item-active a {
+    color: var(--bg-white);
+}
+
+.custom-pagination .ant-pagination-item-active:hover a {
+    color: var(--bg-white);
+}
+
+.custom-pagination .ant-pagination-prev,
+.custom-pagination .ant-pagination-next {
+    min-width: 36px;
+    height: 36px;
+    line-height: 34px;
+}
+
+.custom-pagination .ant-pagination-prev button,
+.custom-pagination .ant-pagination-next button {
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.custom-pagination .ant-pagination-prev:hover button,
+.custom-pagination .ant-pagination-next:hover button {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.custom-pagination .ant-pagination-disabled button {
+    border-color: var(--border-color);
+    color: var(--text-light);
+    cursor: not-allowed;
+}
+
+.custom-pagination .ant-pagination-total-text {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin-right: var(--spacing-md);
+}
+
+.custom-pagination .ant-pagination-jump-prev,
+.custom-pagination .ant-pagination-jump-next {
+    min-width: 36px;
+    height: 36px;
+    line-height: 34px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .custom-pagination-wrapper {
+        padding: var(--spacing-lg) 0;
+    }
+
+    .custom-pagination .ant-pagination-item,
+    .custom-pagination .ant-pagination-prev,
+    .custom-pagination .ant-pagination-next {
+        min-width: 32px;
+        height: 32px;
+        line-height: 30px;
+        font-size: var(--font-size-sm);
+    }
+
+    .custom-pagination .ant-pagination-total-text {
+        display: none;
+    }
+}

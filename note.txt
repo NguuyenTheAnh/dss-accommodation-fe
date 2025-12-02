@@ -1,0 +1,294 @@
+===========================================
+PHÂN TÍCH CẤU TRÚC DỰ ÁN FRONTEND - DORMFINDER
+===========================================
+
+I. THÔNG TIN TỔNG QUAN
+-----------------------
+- Tên dự án: DormFinder (Hệ thống tìm kiếm ký túc xá/chỗ ở)
+- Repository: dss-accommodation-fe
+- Framework: React 18.3.1
+- Build tool: Vite 5.3.1
+- Ngôn ngữ: JavaScript (JSX)
+- Template gốc: Dựa trên template của tác giả Hỏi Dân IT
+- Node.js version: v20.14.0
+
+II. CẤU TRÚC THỨ MỤC
+---------------------
+FE/
+├── index.html              # Entry HTML file
+├── package.json            # Dependencies và scripts
+├── vite.config.js          # Cấu hình Vite
+├── README.md               # Hướng dẫn cài đặt
+├── public/                 # Static assets
+│   └── vite.svg           # Logo Vite
+├── src/                    # Source code chính
+│   ├── main.jsx           # Entry point của React app
+│   ├── App.jsx            # Root component
+│   ├── assets/            # Assets như images, icons
+│   │   └── react.svg
+│   ├── components/        # React components (hiện tại trống)
+│   ├── pages/             # Các trang của ứng dụng
+│   │   └── home.jsx
+│   ├── styles/            # CSS files
+│   │   └── global.css
+│   └── util/              # Utilities và helpers
+│       ├── api.js         # API functions
+│       └── axios.customize.js  # Axios instance với interceptors
+
+III. DEPENDENCIES CHÍNH
+------------------------
+1. Core Libraries:
+   - react: 18.3.1
+   - react-dom: 18.3.1
+   - react-router-dom: 6.24.0 (Routing)
+
+2. UI Framework:
+   - antd: 5.19.0 (Ant Design - UI components)
+   - @ant-design/icons: 5.3.7 (Icon library)
+
+3. HTTP Client:
+   - axios: 1.7.2 (API calls)
+
+4. Dev Dependencies:
+   - @vitejs/plugin-react-swc: 3.5.0 (Fast refresh với SWC)
+   - eslint: 8.57.0 (Linting)
+   - vite: 5.3.1 (Build tool)
+
+IV. ROUTING STRUCTURE
+---------------------
+Cấu hình trong src/main.jsx:
+- "/" → App component (Layout chính)
+  - index (/) → HomePage (Trang chủ)
+  - (Có comment cho route "user" - chưa implement)
+
+V. CÁC FILE QUAN TRỌNG
+-----------------------
+
+1. index.html:
+   - Title: "DormFinder"
+   - Có div#root cho React mount
+   - Import main.jsx qua script type="module"
+
+2. src/main.jsx:
+   - Entry point của React app
+   - Thiết lập React Router với createBrowserRouter
+   - Render RouterProvider với React.StrictMode
+   - Import global CSS
+
+3. src/App.jsx:
+   - Root component đơn giản
+   - Chỉ render <Outlet /> để hiển thị child routes
+   - Chưa có layout/header/footer
+
+4. src/pages/home.jsx:
+   - Trang chủ hiện tại
+   - Hiển thị Result component từ Ant Design
+   - Icon: CrownOutlined
+   - Title: "Test FE comment online"
+   - Padding: 20px
+
+5. src/util/axios.customize.js:
+   - Tạo axios instance với baseURL từ env variable (VITE_BACKEND_URL)
+   - Request interceptor: Tự động thêm Bearer token từ localStorage
+   - Response interceptor: Xử lý response và error
+
+6. src/util/api.js:
+   - Định nghĩa các API functions:
+     * createUserApi(name, email, password) - POST /v1/api/register
+     * loginApi(email, password) - POST /v1/api/login
+     * getUserApi() - GET /v1/api/user
+
+7. src/styles/global.css:
+   - Reset margin và padding toàn bộ elements
+   - CSS tối giản
+
+8. vite.config.js:
+   - Cấu hình cơ bản
+   - Plugin: react-swc (Fast refresh)
+
+VI. NPM SCRIPTS
+---------------
+- npm run dev / npm start → Chạy development server
+- npm run build → Build production
+- npm run preview → Preview production build
+- npm run lint → Chạy ESLint
+
+VII. TÍNH NĂNG ĐÃ CÓ
+---------------------
+✓ Setup cơ bản React + Vite
+✓ React Router đã cấu hình
+✓ Ant Design UI framework
+✓ Axios với interceptors (authentication)
+✓ API layer structure
+✓ Authentication APIs (register, login, getUser)
+
+VIII. ĐIỂM CẦN PHÁT TRIỂN
+--------------------------
+□ Thư mục components/ đang trống - cần tạo reusable components
+□ Chỉ có 1 page (HomePage) - cần thêm các pages khác
+□ HomePage chỉ là placeholder - cần implement UI thực tế
+□ Chưa có layout component (header, footer, sidebar)
+□ Chưa có authentication flow UI
+□ Chưa có state management (Redux/Context API)
+□ Chưa có file .env để config backend URL
+□ Chưa có error boundaries
+□ Chưa có loading states
+
+IX. KIẾN TRÚC DỰ ĐỊNH
+----------------------
+Dựa vào tên "DormFinder" và các API đã có, dự án này có vẻ là:
+- Hệ thống tìm kiếm và quản lý chỗ ở/ký túc xá cho sinh viên
+- Có chức năng đăng ký, đăng nhập người dùng
+- Có thể có các tính năng:
+  * Tìm kiếm chỗ ở
+  * Xem thông tin chi tiết phòng/nhà
+  * Đăng tin cho thuê
+  * Quản lý thông tin cá nhân
+  * Đánh giá/nhận xét
+
+X. GỢI Ý PHÁT TRIỂN TIẾP THEO
+------------------------------
+1. Tạo file .env.development và .env.production cho backend URL
+2. Implement authentication pages (Login, Register)
+3. Tạo Layout component với header/footer
+4. Tạo các components tái sử dụng trong components/
+5. Thêm state management (Context API hoặc Redux)
+6. Implement trang danh sách accommodation
+7. Implement trang chi tiết accommodation
+8. Thêm tính năng search/filter
+9. Implement protected routes cho authenticated users
+10. Thêm error handling và loading states
+
+XI. LƯU Ý KỸ THUẬT
+------------------
+- Sử dụng SWC thay vì Babel → build nhanh hơn
+- Ant Design 5.x → Component library hiện đại
+- React Router v6 → Routing API mới
+- Axios interceptors → Auto-inject token vào mọi request
+- Vite → Hot reload cực nhanh, build tối ưu
+
+===========================================
+Ngày tạo: 03/12/2025
+===========================================
+
+
+
+
+1. Thiết kế giao diện 1:
+🎨 Bộ màu chủ đạo đề xuất (Green Theme)
+Tên	Mã màu	Dùng để
+Primary Green	#0DB14B (hoặc #00A85A)	Nút Search, CTA chính
+Dark Green	#0A7A36	Hover, header text khi cần
+Primary Red	#E60023	Badge cảnh báo (nếu có), tránh sử dụng nhiều
+Neutral Black	#1A1A1A	Background header, text chính
+Gray Light	#F5F5F5	Background section, modal backdrop
+Gray Border	#E0E0E0	Viền card và input
+White	#FFFFFF	Nền chính, card, text trên màu đậm
+
+=> Tông màu vẫn mạnh mẽ như ITViec nhưng thay đỏ chủ đạo → xanh lá chủ đạo.
+
+🧱 Cấu trúc giao diện & hành vi (React Component + Pages)
+🟩 1️⃣ Layout tổng thể (app cố định)
+
+HeaderComponent
+
+MainContent (thay đổi theo màn hình Search / Results)
+
+🟢 2️⃣ Header
+
+Chỉ gồm:
+
+Logo “DormFinder” (bấm vào → về trang Home)
+
+Căn giữa hoặc trái, nền đen, logo màu xanh lá để nổi bật
+
+📌 Không có menu, không có nút khác → tối giản
+
+🔍 3️⃣ Home Page (Search Mode – trước khi tìm kiếm)
+
+Phần Hero Search Box nằm giữa màn hình:
+
+Thành phần:
+
+Input chọn khu vực (Dropdown hoặc Select)
+
+Button "Bộ lọc" (hiển thị modal filter)
+
+Button "Search" (CTA chính – màu xanh lá)
+
+Bên dưới:
+
+Danh sách gợi ý phòng trọ mới nhất
+
+Card phòng trọ sẽ có:
+
+Ảnh phòng
+
+Tên phòng / Giá / Diện tích
+
+Vị trí + icon marker
+
+Nút xem chi tiết
+
+📌 Layout rộng, thoáng, tương tự ITViec phần Trending Jobs & Top Employers
+
+🧩 Modal Filter (khi bấm nút “Bộ lọc”)
+
+Các tiêu chí (placeholder để làm sau):
+
+Khoảng giá
+
+Khoảng cách đến trường
+
+Diện tích
+
+An ninh, tiện nghi (rating)
+
+Loại phòng
+
+Nút:
+
+Áp dụng (Primary)
+
+Reset filter
+
+📌 Modal sẽ được mô tả chi tiết sau → chưa cần triển khai full logic
+
+📌 4️⃣ Search Results Page (sau khi nhấn Search)
+
+UI chuyển sang 2 cột giống mô hình ecommerce/filter search:
+
+Sidebar	Main Content
+Hiển thị các filter đã chọn (tag/removable)	List phòng trọ, pagination
+Có thể mở Modal Filter nâng cao	Card giống như Home
+
+Elements:
+
+Sidebar cố định theo chiều dọc
+
+Nút Clear all filters
+
+Main content phân trang dưới cùng
+
+📌 Phần Header giữ nguyên → chỉ thay đổi phần nội dung bên dưới
+
+🧩 Danh sách Component React đề xuất
+Component	Mô tả
+Header.jsx	Logo DormFinder, nền đen
+SearchBox.jsx	Select khu vực + nút filter + nút search
+RoomCard.jsx	UI item phòng trọ
+RoomList.jsx	Grid/List hiển thị các RoomCard
+FilterModal.jsx	Chọn filter nâng cao
+SidebarFilter.jsx	Danh sách filter đã áp dụng
+Pagination.jsx	Điều hướng trang
+Layout.jsx	Khung layout chung
+HomePage.jsx	Giao diện ban đầu
+SearchResultPage.jsx	Giao diện hiển thị kết quả
+✨ Phần mô tả tóm lược — để làm prompt cho Copilot
+
+Thiết kế giao diện React + Vite cho website DormFinder với màu chủ đạo xanh lá (#0DB14B). Header nền đen chỉ có logo DormFinder và giữ cố định mọi trang.
+Home Page gồm hộp tìm kiếm nổi bật: dropdown chọn khu vực, nút mở modal bộ lọc, nút search màu xanh lá. Bên dưới hiển thị danh sách phòng trọ dạng card grid.
+Sau khi search → chuyển sang giao diện 2 cột: sidebar filter bên trái hiển thị các filter đã chọn (có thể xoá), main content bên phải hiển thị danh sách phòng phân trang.
+Các component cần tách riêng: Header, SearchBox, RoomCard, RoomList, FilterModal, SidebarFilter, Pagination, Layout, HomePage, SearchResultPage.
+Màu sắc: primary green #0DB14B, dark green #0A7A36, black #1A1A1A, white #FFFFFF, gray border #E0E0E0.
+UI thoáng, hiện đại, lấy cảm hứng từ ITViec: nhấn mạnh CTA, layout rõ ràng, nhiều khoảng trắng.

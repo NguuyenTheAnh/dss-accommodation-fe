@@ -1,0 +1,62 @@
+/* Color Variables */
+:root {
+    /* Primary Colors */
+    --primary-green: #0DB14B;
+    --dark-green: #0A7A36;
+    --primary-red: #E60023;
+
+    /* Neutral Colors */
+    --neutral-black: #1A1A1A;
+    --text-primary: #1A1A1A;
+    --text-secondary: #666666;
+    --text-light: #999999;
+
+    /* Background Colors */
+    --bg-white: #FFFFFF;
+    --bg-light: #F5F5F5;
+    --bg-card: #FFFFFF;
+
+    /* Border & Line */
+    --border-color: #E0E0E0;
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-hover: 0 8px 16px rgba(13, 177, 75, 0.15);
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    /* Typography */
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-base: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 32px;
+    --font-size-xxxl: 48px;
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Layout */
+    --header-height: 64px;
+    --max-width: 1200px;
+    --container-padding: 20px;
+}

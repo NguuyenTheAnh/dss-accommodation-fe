@@ -1,0 +1,101 @@
+.search-result-page {
+    background-color: var(--bg-light);
+    min-height: calc(100vh - var(--header-height));
+    padding: var(--spacing-lg) 0;
+}
+
+.search-bar-section {
+    background-color: var(--bg-white);
+    padding: var(--spacing-lg) 0;
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.search-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.results-section {
+    background-color: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.results-header {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.results-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.results-grid {
+    margin-bottom: var(--spacing-lg);
+}
+
+.result-col {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.empty-results {
+    padding: var(--spacing-xxl) 0;
+}
+
+.empty-results .ant-empty-description {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+}
+
+/* Loading State */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .search-result-page {
+        padding: var(--spacing-md) 0;
+    }
+
+    .search-bar-section {
+        padding: var(--spacing-md) 0;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .results-section {
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-md);
+    }
+
+    .results-header {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .results-title {
+        font-size: var(--font-size-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .results-grid {
+        row-gap: var(--spacing-md) !important;
+    }
+}
+
+/* Smooth transitions for filter changes */
+.results-grid.updating {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+}
