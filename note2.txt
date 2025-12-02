@@ -1,0 +1,800 @@
+===========================================
+THIẾT KẾ GIAO DIỆN GIAI ĐOẠN 2 - DORMFINDER
+===========================================
+Ngày tạo: 03/12/2025
+
+I. TỔNG QUAN GIAI ĐOẠN 1 ĐÃ HOÀN THÀNH
+----------------------------------------
+
+✅ ĐÃ TRIỂN KHAI THÀNH CÔNG:
+
+1. Hệ thống CSS Variables & Global Styles
+   - variables.css: Color palette xanh lá (#0DB14B), spacing 8px system, typography
+   - global.css: Reset, animations (fadeIn, slideInUp, scaleIn), utilities
+   - Max-width container: 1280px
+   - Spacing system: 4px, 8px, 16px, 24px, 32px, 48px
+
+2. Components đã tạo (11 components):
+   ✓ Header.jsx + Header.css - Logo gradient, background xanh đậm (#0A1F15 → #0D2A1C)
+   ✓ Layout.jsx + Layout.css - Fixed header wrapper với Outlet
+   ✓ SearchBox.jsx + SearchBox.css - 2 variants (hero/inline), chọn khu vực, filter/search
+   ✓ RoomCard.jsx + RoomCard.css - Card dọc cho HomePage grid
+   ✓ RoomCardHorizontal.jsx + RoomCardHorizontal.css - Card ngang cho SearchResult, Best badge xanh
+   ✓ FilterModal.jsx + FilterModal.css - Modal chọn bộ lọc đầy đủ
+   ✓ SidebarFilter.jsx + SidebarFilter.css - Panel filter bên trái với tất cả controls
+   ✓ CustomPagination.jsx + CustomPagination.css - Phân trang theme xanh
+
+3. Pages đã tạo (2 pages):
+   ✓ HomePage.jsx + HomePage.css - Hero gradient với SearchBox, grid 6 phòng gợi ý
+   ✓ SearchResultPage.jsx + SearchResultPage.css - Layout 2 cột, sidebar filter + danh sách dọc
+
+4. Routing đã cấu hình:
+   ✓ "/" → Layout → HomePage
+   ✓ "/search" → Layout → SearchResultPage
+
+5. Tính năng UI đã có:
+   ✓ Theme xanh lá nhất quán toàn bộ app
+   ✓ Responsive design (mobile, tablet, desktop)
+   ✓ Hover effects & animations mượt mà
+   ✓ Filter system hoàn chỉnh (price, distance, area, rating, roomType, amenities)
+   ✓ Pagination với 10 items/page
+   ✓ Mock data 50 phòng với amenities
+   ✓ Best Choice badge cho phòng đầu tiên (trang 1)
+   ✓ Results count "Hiển thị X-Y của Z kết quả"
+
+6. Cải tiến UI mới nhất (dựa trên feedback screenshot):
+   ✓ Spacing tối ưu theo hệ 8px
+   ✓ Image ratio 3:2 (240x160px) trong RoomCardHorizontal
+   ✓ Best badge đổi từ vàng → xanh (#0DB14B)
+   ✓ Price section layout inline, baseline aligned
+   ✓ Font-size giảm: title 18px, price 22px, distance 12px, amenities 11px
+   ✓ Padding/margin giảm: card 16px, button 8px 20px
+   ✓ Container max-width 1280px
+
+
+II. CÁC VẤN ĐỀ CẦN GIẢI QUYẾT Ở GIAI ĐOẠN 2
+---------------------------------------------
+
+🔴 A. TÍCH HỢP API BACKEND THỰC TẾ
+
+Hiện tại toàn bộ data đang dùng mock/placeholder:
+- HomePage: 6 phòng mock với Unsplash images
+- SearchResultPage: 50 phòng mock với data random
+- Filter: chưa gọi API khi thay đổi filters
+- Pagination: chưa sync với backend pagination
+
+Cần làm:
+1. Tạo API endpoints trong api.js cho:
+   - getRoomsApi(filters, page, pageSize) → GET /v1/api/rooms
+   - getRoomDetailApi(roomId) → GET /v1/api/rooms/:id
+   - getFeaturedRoomsApi() → GET /v1/api/rooms/featured
+   - getAreasApi() → GET /v1/api/areas (danh sách quận/khu vực)
+
+2. Thay thế mock data:
+   - HomePage: useEffect gọi getFeaturedRoomsApi()
+   - SearchResultPage: useEffect gọi getRoomsApi() với filters + pagination
+   - SearchBox: load areas từ getAreasApi() thay vì hardcode
+
+3. Loading states:
+   - Tạo LoadingSpinner component
+   - Hiển thị skeleton khi đang fetch data
+   - Handle loading state cho pagination
+
+4. Error handling:
+   - Hiển thị error message khi API fail
+   - Retry mechanism
+   - Empty state khi không có kết quả
+
+
+🔴 B. TRANG CHI TIẾT PHÒNG TRỌ (RoomDetailPage)
+
+Khi click "Xem chi tiết" hoặc click vào RoomCard → chuyển sang trang chi tiết:
+
+Route: /rooms/:id
+
+Layout:
+┌──────────────────────────────────────────┐
+│ Header (fixed)                           │
+├──────────────────────────────────────────┤
+│ ┌─────────────────┐  ┌─────────────────┐│
+│ │ Image Gallery   │  │ Booking Card    ││
+│ │ (carousel)      │  │ - Giá           ││
+│ │                 │  │ - Diện tích     ││
+│ │                 │  │ - Nút đặt phòng ││
+│ │                 │  │ - Liên hệ       ││
+│ └─────────────────┘  └─────────────────┘│
+│ ┌─────────────────────────────────────┐ │
+│ │ Room Information                    │ │
+│ │ - Tiêu đề                           │ │
+│ │ - Địa chỉ + map                     │ │
+│ │ - Mô tả chi tiết                    │ │
+│ │ - Tiện nghi đầy đủ                  │ │
+│ │ - Quy định                          │ │
+│ └─────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────┐ │
+│ │ Reviews Section                     │ │
+│ │ - Rating overview                   │ │
+│ │ - Danh sách review                  │ │
+│ └─────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────┐ │
+│ │ Similar Rooms                       │ │
+│ │ - Carousel 4-6 phòng tương tự       │ │
+│ └─────────────────────────────────────┘ │
+└──────────────────────────────────────────┘
+
+Components mới cần tạo:
+1. RoomDetailPage.jsx + .css
+2. ImageGallery.jsx + .css (carousel ảnh phòng, lightbox)
+3. BookingCard.jsx + .css (card giá + booking sticky)
+4. RoomInfoSection.jsx + .css (thông tin chi tiết)
+5. ReviewsSection.jsx + .css (đánh giá + viết review)
+6. SimilarRooms.jsx + .css (carousel phòng tương tự)
+
+Tính năng:
+- Image gallery với thumbnail, click để phóng to
+- Booking card sticky khi scroll
+- Map integration (Google Maps/OpenStreetMap)
+- Share button (copy link, social media)
+- Favorite/Save button
+- Contact landlord button (modal hoặc link)
+- Review system (read + write if logged in)
+
+
+🔴 C. AUTHENTICATION & USER PROFILE
+
+Hiện tại đã có API (loginApi, createUserApi, getUserApi) nhưng chưa có UI:
+
+1. Login Page (/login):
+   - Form: email + password
+   - Remember me checkbox
+   - Forgot password link
+   - Link to Register
+   - Social login (Google, Facebook) - optional
+
+2. Register Page (/register):
+   - Form: name, email, password, confirm password
+   - Terms & conditions checkbox
+   - Link to Login
+
+3. User Profile Page (/profile):
+   - Avatar upload
+   - Personal info edit
+   - Change password
+   - Saved rooms (favorites)
+   - Booking history
+   - Logout button
+
+4. Protected Routes:
+   - Tạo ProtectedRoute wrapper
+   - Redirect to /login nếu chưa authenticated
+   - Routes cần protect: /profile, /booking
+
+5. Auth Context/State Management:
+   - Tạo AuthContext để share user state
+   - Token management (localStorage)
+   - Auto-refresh token
+   - Update Header: hiển thị avatar + dropdown khi logged in
+
+Components mới:
+1. LoginPage.jsx + .css
+2. RegisterPage.jsx + .css
+3. UserProfile.jsx + .css
+4. ProtectedRoute.jsx
+5. AuthContext.jsx
+6. UserMenu.jsx (dropdown trong Header khi logged in)
+
+
+🔴 D. BOOKING & PAYMENT FLOW
+
+1. Booking Page (/booking/:roomId):
+   - Summary thông tin phòng
+   - Form: check-in date, duration (số tháng)
+   - Tính tổng tiền
+   - Personal info (name, phone, email)
+   - Payment method selection
+   - Terms acceptance
+   - Confirm booking button
+
+2. Payment Integration (optional - có thể mock):
+   - VNPay, MoMo, ZaloPay
+   - Hoặc đơn giản: "Thanh toán khi nhận phòng"
+
+3. Booking Confirmation Page:
+   - Success message
+   - Booking ID
+   - Email confirmation
+   - Print/Download contract button
+
+Components mới:
+1. BookingPage.jsx + .css
+2. PaymentMethod.jsx + .css
+3. BookingConfirmation.jsx + .css
+
+
+🔴 E. LANDLORD FEATURES (Chủ trọ)
+
+Nếu user là chủ trọ, cần thêm trang quản lý:
+
+1. Post Room Page (/rooms/new):
+   - Upload multiple images
+   - Form: title, description, price, area
+   - Address input (autocomplete)
+   - Amenities checkboxes
+   - Room type select
+   - Rules textarea
+   - Submit → tạo room mới
+
+2. My Rooms Page (/my-rooms):
+   - Danh sách phòng đã đăng
+   - Edit/Delete buttons
+   - View statistics (views, bookings)
+   - Active/Inactive toggle
+
+3. Edit Room Page (/rooms/:id/edit):
+   - Giống PostRoomPage nhưng pre-fill data
+
+Components mới:
+1. PostRoomPage.jsx + .css
+2. MyRoomsPage.jsx + .css
+3. EditRoomPage.jsx + .css
+4. ImageUploader.jsx + .css
+5. AddressAutocomplete.jsx + .css
+
+
+🔴 F. SEARCH & FILTER NÂNG CAO
+
+1. Map View cho SearchResultPage:
+   - Toggle list view / map view
+   - Map hiển thị pins các phòng
+   - Click pin → show mini card
+   - Cluster markers khi zoom out
+
+2. Save Search:
+   - Lưu bộ lọc hiện tại
+   - Nhận notification khi có phòng mới match
+
+3. Sort Options:
+   - Thêm dropdown sort: Giá thấp → cao, Giá cao → thấp, Rating cao nhất, Khoảng cách gần nhất
+   - Hiện đang hardcode "Phù hợp nhất"
+
+4. Advanced Filters:
+   - Tầng (floor level)
+   - Pet allowed
+   - Gender restriction
+   - Available from date
+   - Utilities included (điện, nước, internet)
+
+Components mới:
+1. MapView.jsx + .css
+2. SavedSearches.jsx + .css
+3. SortDropdown.jsx + .css
+
+
+🔴 G. NOTIFICATION SYSTEM
+
+1. Real-time notifications (optional):
+   - WebSocket hoặc polling
+   - Notification badge trong Header
+   - Dropdown notification list
+   - Các loại thông báo:
+     * Booking confirmed
+     * New message from landlord
+     * Price drop on saved room
+     * New room matching saved search
+
+Components mới:
+1. NotificationBell.jsx + .css
+2. NotificationList.jsx + .css
+3. NotificationItem.jsx + .css
+
+
+🔴 H. MESSAGING SYSTEM
+
+Chat giữa người thuê và chủ trọ:
+
+1. Messages Page (/messages):
+   - List conversations (sidebar)
+   - Chat window (main)
+   - Real-time updates
+
+2. Chat Integration trong RoomDetailPage:
+   - Button "Nhắn tin cho chủ trọ"
+   - Open chat modal or redirect to /messages
+
+Components mới:
+1. MessagesPage.jsx + .css
+2. ConversationList.jsx + .css
+3. ChatWindow.jsx + .css
+4. MessageItem.jsx + .css
+
+
+🔴 I. ADMIN DASHBOARD (optional)
+
+Nếu có role admin:
+
+1. Admin Page (/admin):
+   - User management
+   - Room approval/rejection
+   - Statistics dashboard
+   - Reports management
+
+Components mới:
+1. AdminDashboard.jsx + .css
+2. UserManagement.jsx + .css
+3. RoomManagement.jsx + .css
+4. Statistics.jsx + .css
+
+
+🔴 J. RESPONSIVE & MOBILE OPTIMIZATION
+
+Mặc dù đã có responsive cơ bản, cần cải thiện:
+
+1. Mobile Navigation:
+   - Hamburger menu cho Header
+   - Bottom navigation bar (optional)
+
+2. Touch Gestures:
+   - Swipe để xem ảnh trong gallery
+   - Pull to refresh
+
+3. Mobile-first Components:
+   - Filter drawer thay vì sidebar
+   - Sticky search bar
+
+
+🔴 K. PERFORMANCE OPTIMIZATION
+
+1. Code Splitting:
+   - Lazy load các pages
+   - Dynamic imports cho heavy components
+
+2. Image Optimization:
+   - Lazy loading images
+   - Responsive images (srcset)
+   - WebP format
+   - Image compression
+
+3. Caching Strategy:
+   - Cache API responses
+   - Service worker (PWA)
+
+4. SEO:
+   - Meta tags dynamic
+   - Open Graph tags
+   - Sitemap
+   - Structured data
+
+
+🔴 L. TESTING & DOCUMENTATION
+
+1. Unit Tests:
+   - Vitest cho components
+   - Testing Library
+
+2. E2E Tests:
+   - Playwright/Cypress
+   - Test critical flows
+
+3. Storybook:
+   - Document components
+   - Visual regression testing
+
+4. README updates:
+   - Project structure
+   - API documentation
+   - Component usage
+
+
+III. ƯU TIÊN TRIỂN KHAI GIAI ĐOẠN 2
+------------------------------------
+
+🎯 PHASE 2A - CƠ BẢN (BẮT BUỘC):
+1. Tích hợp API backend thực tế (A)
+2. Trang chi tiết phòng (B)
+3. Authentication & User Profile (C)
+4. Loading & Error states
+
+🎯 PHASE 2B - NÂNG CAO:
+5. Booking & Payment flow (D)
+6. Search nâng cao: Sort, Map view (F)
+7. Landlord features: Post room (E)
+
+🎯 PHASE 2C - BỔ SUNG (OPTIONAL):
+8. Messaging system (H)
+9. Notification system (G)
+10. Admin dashboard (I)
+
+🎯 PHASE 2D - TỐI ƯU HÓA:
+11. Performance optimization (K)
+12. Mobile optimization (J)
+13. Testing & Documentation (L)
+
+
+IV. KẾ HOẠCH CHI TIẾT PHASE 2A
+-------------------------------
+
+📌 BƯỚC 1: Tích hợp API Backend
+--------------------------------
+File cần tạo/sửa:
+- src/util/api.js: Thêm các functions mới
+  * getRoomsApi(filters, page, pageSize)
+  * getRoomDetailApi(roomId)
+  * getFeaturedRoomsApi()
+  * getAreasApi()
+
+- src/components/LoadingSpinner.jsx + .css
+  * Spinner animation theme xanh
+  * Có variant: small, medium, large
+  * Có overlay variant cho full-page loading
+
+- src/pages/HomePage.jsx:
+  * useEffect fetch getFeaturedRoomsApi()
+  * useState cho loading, error, rooms
+  * Hiển thị LoadingSpinner khi loading
+  * Hiển thị error message nếu có lỗi
+  * Fallback về mock data nếu API chưa sẵn
+
+- src/pages/SearchResultPage.jsx:
+  * useEffect fetch getRoomsApi() khi filters/page thay đổi
+  * Debounce filter changes (500ms)
+  * Loading state cho toàn bộ list
+  * Skeleton loading cho từng card
+  * Error handling & retry button
+
+- src/components/SearchBox.jsx:
+  * useEffect fetch getAreasApi()
+  * Populate Select options từ API
+  * Loading state cho Select
+
+📌 BƯỚC 2: Trang Chi Tiết Phòng
+--------------------------------
+Route: /rooms/:id
+
+File cần tạo:
+1. src/pages/RoomDetailPage.jsx + .css
+   - Layout 2 cột: 70% content, 30% booking card
+   - Breadcrumb: Home > Search > Room Name
+   - Sections: Gallery, Info, Reviews, Similar
+
+2. src/components/ImageGallery.jsx + .css
+   - Main image lớn
+   - Thumbnail grid bên dưới (4-5 ảnh)
+   - Click thumbnail → change main
+   - Button "Xem tất cả ảnh" → open lightbox
+   - Lightbox modal với carousel
+   - Ant Design Carousel hoặc tự build
+
+3. src/components/BookingCard.jsx + .css
+   - Sticky position khi scroll
+   - Display: Giá/tháng, Diện tích, Rating
+   - Button "Đặt phòng ngay" (primary green)
+   - Button "Liên hệ chủ trọ" (outline)
+   - Button "Lưu phòng" (icon heart)
+   - Share button (copy link)
+
+4. src/components/RoomInfoSection.jsx + .css
+   - Title + Address
+   - Rating stars + số lượng reviews
+   - Distance badge
+   - Description (expandable nếu quá dài)
+   - Amenities grid với icons
+   - Rules list
+   - Map embed (Google Maps iframe hoặc Leaflet)
+
+5. src/components/ReviewsSection.jsx + .css
+   - Rating overview (bar charts cho từng sao)
+   - Filter reviews: Tất cả, 5 sao, 4 sao...
+   - Review list với pagination
+   - ReviewItem: Avatar, Name, Rating, Date, Text
+   - Button "Viết đánh giá" (chỉ khi logged in)
+   - Modal viết review: Rate stars, Text area, Photos upload
+
+6. src/components/SimilarRooms.jsx + .css
+   - Title "Phòng tương tự"
+   - Horizontal carousel
+   - Reuse RoomCard component
+   - Fetch API similar rooms dựa vào: location, price range, area
+
+API cần thêm:
+- getRoomDetailApi(roomId)
+- getRoomReviewsApi(roomId, page, pageSize)
+- createReviewApi(roomId, rating, comment, photos)
+- getSimilarRoomsApi(roomId)
+- toggleFavoriteApi(roomId)
+
+📌 BƯỚC 3: Authentication UI
+-----------------------------
+Routes:
+- /login
+- /register
+- /profile
+
+File cần tạo:
+1. src/context/AuthContext.jsx
+   - createContext + useContext hook
+   - State: user, token, isAuthenticated, loading
+   - Functions: login, logout, register, checkAuth
+   - useEffect: Check token in localStorage on mount
+   - Wrap App với AuthProvider trong main.jsx
+
+2. src/pages/LoginPage.jsx + .css
+   - Layout: Center card trên background gradient
+   - Logo DormFinder
+   - Form: Email (Input), Password (Input.Password)
+   - Checkbox "Ghi nhớ đăng nhập"
+   - Button "Đăng nhập" (primary green, full width)
+   - Link "Quên mật khẩu?"
+   - Divider "hoặc"
+   - Link "Chưa có tài khoản? Đăng ký ngay"
+   - Validation: email format, required fields
+   - Error message hiển thị nếu login fail
+   - Redirect về trang trước hoặc "/" sau khi login thành công
+
+3. src/pages/RegisterPage.jsx + .css
+   - Giống LoginPage layout
+   - Form: Name, Email, Password, Confirm Password
+   - Checkbox "Tôi đồng ý với Điều khoản sử dụng"
+   - Button "Đăng ký"
+   - Link "Đã có tài khoản? Đăng nhập"
+   - Validation: password match, email unique
+   - Success → auto login → redirect "/"
+
+4. src/pages/UserProfile.jsx + .css
+   - Layout: Sidebar menu + Content area
+   - Sidebar tabs:
+     * Thông tin cá nhân
+     * Phòng đã lưu
+     * Lịch sử đặt phòng
+     * Đổi mật khẩu
+     * Đăng xuất
+   - Tab "Thông tin cá nhân":
+     * Avatar upload (click để chọn file)
+     * Form: Name, Email (disabled), Phone, Address
+     * Button "Cập nhật"
+   - Tab "Phòng đã lưu":
+     * Grid RoomCard của các phòng favorite
+     * Button remove favorite
+   - Tab "Đổi mật khẩu":
+     * Form: Current password, New password, Confirm new password
+     * Button "Đổi mật khẩu"
+
+5. src/components/ProtectedRoute.jsx
+   - Wrapper component check isAuthenticated
+   - Nếu false → redirect to /login with returnUrl
+   - Nếu true → render children (Outlet)
+   - Use in routing: <Route element={<ProtectedRoute />}>
+
+6. src/components/UserMenu.jsx + .css
+   - Dropdown trong Header (góc phải)
+   - Hiển thị khi isAuthenticated
+   - Avatar + Name
+   - Menu items:
+     * Trang cá nhân (/profile)
+     * Phòng đã lưu (/profile?tab=saved)
+     * Phòng của tôi (nếu là landlord) (/my-rooms)
+     * Divider
+     * Đăng xuất
+   - Nếu chưa login → hiển thị buttons: Đăng nhập, Đăng ký
+
+Cập nhật Header.jsx:
+- Import UserMenu
+- Thêm UserMenu vào góc phải
+- Responsive: mobile ẩn text, chỉ hiển thị avatar
+
+API đã có (kiểm tra lại):
+- loginApi(email, password)
+- createUserApi(name, email, password)
+- getUserApi()
+
+API cần thêm:
+- updateUserApi(userId, data)
+- uploadAvatarApi(file)
+- changePasswordApi(currentPassword, newPassword)
+- getFavoriteRoomsApi()
+
+
+V. COMPONENT TREE HOÀN CHỈNH SAU GIAI ĐOẠN 2A
+----------------------------------------------
+```
+App
+├── AuthProvider
+│   └── RouterProvider
+│       └── Layout
+│           ├── Header
+│           │   ├── Logo
+│           │   └── UserMenu (login/logout state)
+│           └── Outlet
+│               ├── HomePage
+│               │   ├── SearchBox (variant="hero")
+│               │   ├── FilterModal
+│               │   └── RoomCard[] (grid featured rooms)
+│               ├── SearchResultPage
+│               │   ├── Row/Col Layout
+│               │   ├── SidebarFilter
+│               │   ├── RoomCardHorizontal[] (list)
+│               │   └── CustomPagination
+│               ├── RoomDetailPage **NEW**
+│               │   ├── ImageGallery **NEW**
+│               │   ├── BookingCard **NEW**
+│               │   ├── RoomInfoSection **NEW**
+│               │   ├── ReviewsSection **NEW**
+│               │   └── SimilarRooms **NEW**
+│               ├── LoginPage **NEW**
+│               ├── RegisterPage **NEW**
+│               └── ProtectedRoute **NEW**
+│                   └── UserProfile **NEW**
+```
+
+VI. STYLING GUIDELINES CHO PHASE 2A
+------------------------------------
+- Tiếp tục sử dụng CSS Variables từ variables.css
+- Tất cả component mới PHẢI responsive (mobile, tablet, desktop)
+- Animations: fadeIn, slideInUp cho page transitions
+- Button states: hover, active, disabled với green theme
+- Form validation: red border + error message
+- Loading states: skeleton hoặc spinner, không block UI
+- Modal: backdrop blur, smooth open/close animation
+- Sticky elements: smooth transition khi scroll
+- Image lazy loading: placeholder blur → sharp
+- Maintain 8px spacing system: 8, 16, 24, 32, 48
+
+
+VII. DATA STRUCTURE MẪU
+------------------------
+
+Room Object (từ API):
+```json
+{
+  "id": 1,
+  "title": "Phòng trọ cao cấp gần ĐH Bách Khoa",
+  "description": "Phòng rộng rãi, đầy đủ tiện nghi...",
+  "price": 3500000,
+  "area": 25,
+  "location": {
+    "address": "123 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
+    "district": "Hai Bà Trưng",
+    "lat": 21.0045,
+    "lng": 105.8412
+  },
+  "images": [
+    "https://example.com/room1.jpg",
+    "https://example.com/room2.jpg"
+  ],
+  "rating": 4.5,
+  "reviewCount": 23,
+  "distance": 1.2,
+  "distanceUnit": "km",
+  "amenities": ["WiFi", "Điều hòa", "Máy giặt", "Bếp", "An ninh 24/7"],
+  "roomType": "single",
+  "rules": "Không hút thuốc, không nuôi thú cưng",
+  "floor": 3,
+  "landlord": {
+    "id": 5,
+    "name": "Nguyễn Văn A",
+    "avatar": "https://example.com/avatar.jpg",
+    "phone": "0123456789"
+  },
+  "createdAt": "2024-12-01T10:00:00Z",
+  "status": "available"
+}
+```
+
+User Object:
+```json
+{
+  "id": 1,
+  "name": "Nguyễn Văn B",
+  "email": "user@example.com",
+  "phone": "0987654321",
+  "avatar": "https://example.com/user-avatar.jpg",
+  "role": "user", // hoặc "landlord", "admin"
+  "favorites": [1, 5, 12],
+  "createdAt": "2024-11-01T10:00:00Z"
+}
+```
+
+Review Object:
+```json
+{
+  "id": 1,
+  "roomId": 1,
+  "userId": 2,
+  "userName": "Trần Thị C",
+  "userAvatar": "https://example.com/avatar2.jpg",
+  "rating": 5,
+  "comment": "Phòng rất đẹp, sạch sẽ...",
+  "photos": ["https://example.com/review1.jpg"],
+  "createdAt": "2024-11-15T10:00:00Z"
+}
+```
+
+
+VIII. CHECKLIST TRIỂN KHAI PHASE 2A
+------------------------------------
+
+API Integration:
+☐ Tạo getRoomsApi() trong api.js
+☐ Tạo getRoomDetailApi() trong api.js
+☐ Tạo getFeaturedRoomsApi() trong api.js
+☐ Tạo getAreasApi() trong api.js
+☐ Tạo getRoomReviewsApi() trong api.js
+☐ Tạo createReviewApi() trong api.js
+☐ Tạo getSimilarRoomsApi() trong api.js
+☐ Tạo toggleFavoriteApi() trong api.js
+☐ Tạo getFavoriteRoomsApi() trong api.js
+
+Components - Loading & Error:
+☐ LoadingSpinner.jsx + .css
+☐ SkeletonCard.jsx + .css (optional)
+☐ ErrorMessage.jsx + .css
+
+Components - Room Detail:
+☐ RoomDetailPage.jsx + .css
+☐ ImageGallery.jsx + .css
+☐ BookingCard.jsx + .css
+☐ RoomInfoSection.jsx + .css
+☐ ReviewsSection.jsx + .css
+☐ SimilarRooms.jsx + .css
+☐ WriteReviewModal.jsx + .css
+
+Components - Authentication:
+☐ AuthContext.jsx
+☐ LoginPage.jsx + .css
+☐ RegisterPage.jsx + .css
+☐ UserProfile.jsx + .css
+☐ ProtectedRoute.jsx
+☐ UserMenu.jsx + .css
+
+Updates - Existing Components:
+☐ HomePage: Tích hợp API, loading states
+☐ SearchResultPage: Tích hợp API, loading states
+☐ SearchBox: Load areas từ API
+☐ Header: Thêm UserMenu
+☐ RoomCard: Add click → navigate to /rooms/:id
+☐ RoomCardHorizontal: Add click → navigate to /rooms/:id
+
+Routing:
+☐ Thêm route /rooms/:id → RoomDetailPage
+☐ Thêm route /login → LoginPage
+☐ Thêm route /register → RegisterPage
+☐ Thêm route /profile → UserProfile (protected)
+☐ Cập nhật main.jsx với AuthProvider
+
+Testing:
+☐ Test login flow
+☐ Test register flow
+☐ Test protected routes redirect
+☐ Test API error handling
+☐ Test loading states
+☐ Test responsive design
+☐ Test room detail page
+☐ Test review submission
+☐ Test favorite toggle
+
+
+IX. TÀI LIỆU THAM KHẢO
+-----------------------
+- Ant Design Components: https://ant.design/components/overview/
+- React Router v6: https://reactrouter.com/
+- Axios Documentation: https://axios-http.com/
+- Context API: https://react.dev/reference/react/useContext
+- Protected Routes: https://reactrouter.com/en/main/start/tutorial#protecting-routes
+
+
+X. GHI CHÚ QUAN TRỌNG
+----------------------
+1. Luôn maintain green theme (#0DB14B) consistency
+2. Tất cả API calls phải có error handling
+3. Loading states không được block toàn bộ UI
+4. Form validation phải clear và helpful
+5. Responsive design là bắt buộc cho mọi component mới
+6. Token expiry phải handle gracefully (redirect to login)
+7. Image upload phải có size/type validation
+8. Review submission phải có rate limiting
+9. Favorite toggle phải có optimistic update
+10. Tất cả modal phải có ESC key to close
+
+===========================================
+KẾT THÚC THIẾT KẾ GIAI ĐOẠN 2A
+Ngày cập nhật: 03/12/2025
+===========================================
