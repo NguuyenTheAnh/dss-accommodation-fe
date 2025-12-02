@@ -65,18 +65,18 @@
     .search-result-page {
         padding: var(--spacing-lg) 0;
     }
-    
+
     .results-section {
         margin-top: var(--spacing-lg);
         padding: var(--spacing-lg);
         min-height: auto;
     }
-    
+
     .results-header {
         margin-bottom: var(--spacing-lg);
         padding-bottom: var(--spacing-md);
     }
-    
+
     .results-title {
         font-size: var(--font-size-xl);
     }
@@ -86,11 +86,11 @@
     .search-result-page {
         padding: var(--spacing-md) 0;
     }
-    
+
     .results-section {
         padding: var(--spacing-md);
     }
-    
+
     .results-title {
         font-size: var(--font-size-lg);
     }
