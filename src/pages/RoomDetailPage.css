@@ -1,0 +1,89 @@
+.room-detail-page {
+    background-color: var(--bg-light);
+    min-height: calc(100vh - var(--header-height));
+    padding: var(--spacing-xl) 0;
+}
+
+.room-detail-loading,
+.room-detail-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: var(--spacing-lg);
+}
+
+.room-detail-error p {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+}
+
+.back-button {
+    margin-bottom: var(--spacing-lg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.back-button:hover {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.room-detail-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.right-section {
+    background-color: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.detail-tabs {
+    padding: var(--spacing-lg);
+}
+
+.detail-tabs .ant-tabs-nav {
+    margin-bottom: var(--spacing-lg);
+}
+
+.detail-tabs .ant-tabs-tab {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.detail-tabs .ant-tabs-tab-active {
+    color: var(--primary-green);
+}
+
+.detail-tabs .ant-tabs-ink-bar {
+    background-color: var(--primary-green);
+}
+
+/* Mobile */
+@media (max-width: 991px) {
+    .room-detail-page {
+        padding: var(--spacing-lg) 0;
+    }
+
+    .back-button {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .detail-tabs {
+        padding: var(--spacing-md);
+    }
+
+    .room-detail-content {
+        gap: var(--spacing-md) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .room-detail-page {
+        padding: var(--spacing-md) 0;
+    }
+}

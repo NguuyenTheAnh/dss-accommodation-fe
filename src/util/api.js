@@ -23,6 +23,23 @@ const getUserApi = () => {
     return axios.get(URL_API)
 }
 
+const getRoomDetailApi = (roomId) => {
+    const URL_API = `/v1/api/rooms/${roomId}`;
+    return axios.get(URL_API)
+}
+
+const getRoomsApi = (filters, page = 1, pageSize = 10) => {
+    const URL_API = "/v1/api/rooms";
+    return axios.get(URL_API, {
+        params: {
+            ...filters,
+            page,
+            pageSize
+        }
+    })
+}
+
 export {
-    createUserApi, loginApi, getUserApi
+    createUserApi, loginApi, getUserApi,
+    getRoomDetailApi, getRoomsApi
 }

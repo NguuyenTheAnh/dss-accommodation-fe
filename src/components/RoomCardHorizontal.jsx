@@ -1,8 +1,10 @@
 import { Card, Tag } from 'antd';
 import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, StarFilled, CrownFilled } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import './RoomCardHorizontal.css';
 
 const RoomCardHorizontal = ({ room, isBest = false }) => {
+    const navigate = useNavigate();
     const {
         id,
         image = 'https://via.placeholder.com/400x250?text=Room+Image',
@@ -16,8 +18,7 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     } = room || {};
 
     const handleCardClick = () => {
-        console.log('View room details:', id);
-        // Navigate to room details page
+        navigate(`/rooms/${id}`);
     };
 
     return (

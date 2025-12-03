@@ -1,8 +1,10 @@
 import { Card } from 'antd';
 import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, StarFilled } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import './RoomCard.css';
 
 const RoomCard = ({ room }) => {
+    const navigate = useNavigate();
     const {
         id,
         image = 'https://via.placeholder.com/300x200?text=Room+Image',
@@ -15,8 +17,7 @@ const RoomCard = ({ room }) => {
     } = room || {};
 
     const handleCardClick = () => {
-        console.log('View room details:', id);
-        // Navigate to room details page
+        navigate(`/rooms/${id}`);
     };
 
     return (

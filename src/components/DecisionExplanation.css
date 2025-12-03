@@ -1,0 +1,263 @@
+.decision-explanation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* Header với điểm tổng */
+.explanation-header {
+    display: flex;
+    justify-content: center;
+}
+
+.total-score-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, #0DB14B 0%, #0A7A36 100%);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    color: white;
+    min-width: 300px;
+}
+
+.trophy-icon {
+    font-size: 48px;
+    color: #FFD700;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.score-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.score-label {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+.score-number {
+    font-size: var(--font-size-xxxl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+.rank-tag {
+    align-self: flex-start;
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Alert giải thích */
+.explanation-alert {
+    border-radius: var(--border-radius-md);
+}
+
+.explanation-list {
+    margin: var(--spacing-sm) 0 0 0;
+    padding-left: var(--spacing-lg);
+}
+
+.explanation-list li {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.check-icon {
+    color: var(--primary-green);
+    margin-right: var(--spacing-xs);
+}
+
+/* Sections */
+.table-section,
+.methodology-section,
+.conclusion-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.section-subtitle {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.section-subtitle .anticon {
+    color: var(--primary-green);
+}
+
+/* Tables */
+.custom-table {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.custom-table .ant-table-thead>tr>th {
+    background-color: #E8F5E9;
+    color: var(--dark-green);
+    font-weight: var(--font-weight-semibold);
+}
+
+.custom-table .ant-table-tbody>tr:hover>td {
+    background-color: #F1F8F4;
+}
+
+.attr-icon {
+    font-size: 18px;
+    margin-right: var(--spacing-xs);
+}
+
+.progress-cell {
+    padding: 0 var(--spacing-sm);
+}
+
+.score-value {
+    color: var(--primary-green);
+    font-size: var(--font-size-base);
+}
+
+/* Summary row */
+.summary-row {
+    background-color: #E8F5E9 !important;
+}
+
+.summary-row td {
+    font-weight: var(--font-weight-semibold);
+}
+
+.total-score-value {
+    font-size: var(--font-size-xl);
+    color: var(--primary-green);
+}
+
+/* Methodology card */
+.methodology-card {
+    padding: var(--spacing-lg);
+    background-color: #F5F5F5;
+    border-left: 4px solid var(--primary-green);
+    border-radius: var(--border-radius-md);
+}
+
+.methodology-card p {
+    margin: 0 0 var(--spacing-sm) 0;
+    line-height: 1.6;
+}
+
+.methodology-card p:last-child {
+    margin-bottom: 0;
+}
+
+.formula {
+    font-family: 'Courier New', monospace;
+    padding: var(--spacing-sm);
+    background-color: white;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.formula code {
+    color: var(--primary-green);
+    font-weight: var(--font-weight-semibold);
+}
+
+.note {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Conclusion card */
+.conclusion-card {
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, #E8F5E9 0%, #F1F8F4 100%);
+    border-radius: var(--border-radius-md);
+    border: 1px solid #C8E6C9;
+}
+
+.conclusion-card p {
+    margin: 0 0 var(--spacing-md) 0;
+    line-height: 1.8;
+}
+
+.conclusion-card p:last-child {
+    margin-bottom: 0;
+}
+
+.conclusion-card strong {
+    color: var(--primary-green);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .total-score-card {
+        flex-direction: column;
+        text-align: center;
+        min-width: auto;
+        width: 100%;
+        padding: var(--spacing-lg);
+    }
+
+    .trophy-icon {
+        font-size: 36px;
+    }
+
+    .score-number {
+        font-size: var(--font-size-xxl);
+    }
+
+    .score-content {
+        align-items: center;
+    }
+
+    .rank-tag {
+        align-self: center;
+    }
+
+    .explanation-list {
+        padding-left: var(--spacing-md);
+    }
+
+    .methodology-card,
+    .conclusion-card {
+        padding: var(--spacing-md);
+    }
+
+    .custom-table {
+        font-size: var(--font-size-xs);
+    }
+
+    .attr-icon {
+        font-size: 14px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 991px) {
+    .decision-explanation {
+        gap: var(--spacing-lg);
+    }
+
+    .section-subtitle {
+        font-size: var(--font-size-base);
+    }
+}
