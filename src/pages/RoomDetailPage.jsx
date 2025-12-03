@@ -167,17 +167,21 @@ const RoomDetailPage = () => {
                 <Row gutter={[24, 24]} className="room-detail-content">
                     {/* Left Column - Room Info */}
                     <Col xs={24} lg={10}>
-                        <RoomInfoSection roomData={roomData} />
+                        <div className="left-column-scroll">
+                            <RoomInfoSection roomData={roomData} />
+                        </div>
                     </Col>
 
                     {/* Right Column - Map & Explanation */}
                     <Col xs={24} lg={14}>
-                        <div className="right-section">
-                            <Tabs
-                                defaultActiveKey="map"
-                                items={tabItems}
-                                className="detail-tabs"
-                            />
+                        <div className="right-column-scroll">
+                            <div className="right-section">
+                                <Tabs
+                                    defaultActiveKey="map"
+                                    items={tabItems}
+                                    className="detail-tabs"
+                                />
+                            </div>
                         </div>
                     </Col>
                 </Row>
