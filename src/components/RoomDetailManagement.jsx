@@ -16,15 +16,16 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
     const [areaTypes, setAreaTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const [surveyForm] = Form.useForm();
 
     const isEditMode = mode === 'edit' || mode === 'add';
     const isAddMode = mode === 'add';
 
     useEffect(() => {
         fetchAreaTypes();
+        fetchSurveyData(); // Lấy câu hỏi khảo sát cho tất cả mode
         if (room?.id) {
             fetchRoomDetail();
-            fetchSurveyData();
         } else if (isAddMode) {
             // Chế độ thêm mới - sử dụng dữ liệu từ room prop
             setRoomDetail(room);
@@ -40,6 +41,8 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                 status: room.status || 'AVAILABLE',
                 areaTypeId: room.areaTypeId || 1
             });
+            // Khởi tạo giá trị mặc định cho survey form
+            initializeSurveyForm();
         }
     }, [room?.id, mode]);
 
@@ -136,31 +139,48 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     const fetchSurveyData = async () => {
         try {
-            // MOCK API - Get survey questions
+            // MOCK API - Get survey questions (2 loại: Tiện nghi và An ninh)
             const questionsResponse = {
                 code: '00',
                 message: null,
                 data: [
-                    { id: 1, questionText: 'Phòng có sạch sẽ không?', questionOrder: 1 },
-                    { id: 2, questionText: 'Chủ nhà có thân thiện không?', questionOrder: 2 },
-                    { id: 3, questionText: 'Giá thuê có hợp lý không?', questionOrder: 3 },
-                    { id: 4, questionText: 'Vị trí có thuận tiện không?', questionOrder: 4 },
-                    { id: 5, questionText: 'An ninh có tốt không?', questionOrder: 5 }
+                    // Tiện nghi
+                    { id: 1, questionText: 'WiFi có ổn định không?', questionOrder: 1, category: 'amenity' },
+                    { id: 2, questionText: 'Điều hòa có hoạt động tốt không?', questionOrder: 2, category: 'amenity' },
+                    { id: 3, questionText: 'Nước nóng có đầy đủ không?', questionOrder: 3, category: 'amenity' },
+                    { id: 4, questionText: 'Giường tủ có đầy đủ không?', questionOrder: 4, category: 'amenity' },
+                    { id: 5, questionText: 'Khu vực nấu ăn có tiện lợi không?', questionOrder: 5, category: 'amenity' },
+                    // An ninh
+                    { id: 6, questionText: 'Có camera an ninh không?', questionOrder: 6, category: 'security' },
+                    { id: 7, questionText: 'Có bảo vệ 24/7 không?', questionOrder: 7, category: 'security' },
+                    { id: 8, questionText: 'Khu vực có an toàn không?', questionOrder: 8, category: 'security' },
+                    { id: 9, questionText: 'Cửa ra vào có khóa chặt không?', questionOrder: 9, category: 'security' },
+                    { id: 10, questionText: 'Có hệ thống báo cháy không?', questionOrder: 10, category: 'security' }
                 ]
             };
 
-            // MOCK API - Get survey answers for this room
-            const answersResponse = {
-                code: '00',
-                message: null,
-                data: [
-                    { surveyQuestionId: 1, avgPoint: 4.8, totalAnswers: 15 },
-                    { surveyQuestionId: 2, avgPoint: 4.9, totalAnswers: 15 },
-                    { surveyQuestionId: 3, avgPoint: 4.2, totalAnswers: 15 },
-                    { surveyQuestionId: 4, avgPoint: 4.7, totalAnswers: 15 },
-                    { surveyQuestionId: 5, avgPoint: 4.5, totalAnswers: 15 }
-                ]
-            };
+            // MOCK API - Get survey answers for this room (chỉ khi có room.id)
+            let answersResponse = { code: '00', message: null, data: [] };
+            if (room?.id) {
+                answersResponse = {
+                    code: '00',
+                    message: null,
+                    data: [
+                        // Tiện nghi
+                        { surveyQuestionId: 1, avgPoint: 4.8, totalAnswers: 15 },
+                        { surveyQuestionId: 2, avgPoint: 4.9, totalAnswers: 15 },
+                        { surveyQuestionId: 3, avgPoint: 4.2, totalAnswers: 15 },
+                        { surveyQuestionId: 4, avgPoint: 4.7, totalAnswers: 15 },
+                        { surveyQuestionId: 5, avgPoint: 4.5, totalAnswers: 15 },
+                        // An ninh
+                        { surveyQuestionId: 6, avgPoint: 4.6, totalAnswers: 15 },
+                        { surveyQuestionId: 7, avgPoint: 4.8, totalAnswers: 15 },
+                        { surveyQuestionId: 8, avgPoint: 4.3, totalAnswers: 15 },
+                        { surveyQuestionId: 9, avgPoint: 4.7, totalAnswers: 15 },
+                        { surveyQuestionId: 10, avgPoint: 4.4, totalAnswers: 15 }
+                    ]
+                };
+            }
 
             await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -169,10 +189,28 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
             }
             if (answersResponse.code === '00') {
                 setSurveyAnswers(answersResponse.data);
+                // Set giá trị cho survey form khi edit
+                if (mode === 'edit' && answersResponse.data.length > 0) {
+                    const surveyValues = {};
+                    answersResponse.data.forEach(answer => {
+                        surveyValues[`question_${answer.surveyQuestionId}`] = answer.avgPoint;
+                    });
+                    surveyForm.setFieldsValue(surveyValues);
+                }
             }
         } catch (error) {
             console.error('Error fetching survey data:', error);
         }
+    };
+
+    // Khởi tạo giá trị mặc định cho survey form (chế độ thêm mới)
+    const initializeSurveyForm = () => {
+        const defaultValues = {};
+        // Set tất cả câu hỏi về 0 điểm
+        for (let i = 1; i <= 10; i++) {
+            defaultValues[`question_${i}`] = 0;
+        }
+        surveyForm.setFieldsValue(defaultValues);
     };
 
     // Calculate average score from survey answers
@@ -182,21 +220,75 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         return (total / surveyAnswers.length).toFixed(1);
     };
 
+    // Calculate average score by category
+    const calculateCategoryAverage = (category) => {
+        const categoryQuestions = surveyQuestions.filter(q => q.category === category);
+        if (categoryQuestions.length === 0) return 0;
+
+        const categoryAnswers = surveyAnswers.filter(a =>
+            categoryQuestions.some(q => q.id === a.surveyQuestionId)
+        );
+
+        if (categoryAnswers.length === 0) return 0;
+        const total = categoryAnswers.reduce((sum, answer) => sum + answer.avgPoint, 0);
+        return (total / categoryAnswers.length).toFixed(1);
+    };
+
+    // Calculate average from form values (for edit/add mode)
+    const calculateFormAverage = (category) => {
+        const categoryQuestions = surveyQuestions.filter(q => q.category === category);
+        if (categoryQuestions.length === 0) return 0;
+
+        const values = surveyForm.getFieldsValue();
+        let total = 0;
+        let count = 0;
+
+        categoryQuestions.forEach(q => {
+            const value = values[`question_${q.id}`];
+            if (value !== undefined && value !== null) {
+                total += value;
+                count++;
+            }
+        });
+
+        return count > 0 ? (total / count).toFixed(1) : 0;
+    };
+
     // Handle form submit
-    const handleSubmit = async (values) => {
+    const handleSubmit = async () => {
         try {
+            // Validate cả 2 form
+            await form.validateFields();
+            const surveyValues = await surveyForm.validateFields();
+
             setLoading(true);
+
+            // Chuyển đổi survey values thành format API
+            const surveyAnswers = Object.keys(surveyValues).map(key => {
+                const questionId = parseInt(key.replace('question_', ''));
+                return {
+                    surveyQuestionId: questionId,
+                    point: surveyValues[key]
+                };
+            });
+
+            const roomValues = form.getFieldsValue();
             const updatedRoom = {
                 ...roomDetail,
-                ...values
+                ...roomValues,
+                surveyAnswers
             };
 
             if (onSave) {
                 await onSave(updatedRoom);
             }
         } catch (error) {
-            console.error('Error saving room:', error);
-            message.error('Có lỗi xảy ra khi lưu phòng');
+            if (error.errorFields) {
+                message.error('Vui lòng điền đầy đủ thông tin!');
+            } else {
+                console.error('Error saving room:', error);
+                message.error('Có lỗi xảy ra khi lưu phòng');
+            }
         } finally {
             setLoading(false);
         }
@@ -222,13 +314,12 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         );
     };
 
-    // Tab 1: Room Information (similar to RoomDetailPage layout)
+    // Tab 1: Room Information
     const roomInfoTab = isEditMode ? (
         // Edit/Add Mode - Form with editable fields
         <Form
             form={form}
             layout="vertical"
-            onFinish={handleSubmit}
             className="room-edit-form"
         >
             <Row gutter={[24, 24]} className="room-detail-content">
@@ -367,19 +458,6 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     <Option key={area.id} value={area.id}>{area.name}</Option>
                                 ))}
                             </Select>
-                        </Form.Item>
-
-                        <Form.Item>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                icon={<SaveOutlined />}
-                                size="large"
-                                loading={loading}
-                                block
-                            >
-                                {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
-                            </Button>
                         </Form.Item>
                     </Card>
                 </Col>
@@ -619,11 +697,117 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         </div>
     );
 
+    // Survey Form Tab for Edit/Add Mode
+    const surveyFormTab = (
+        <div className="survey-form-tab">
+            <Form
+                form={surveyForm}
+                layout="vertical"
+                className="survey-form"
+            >
+                <Row gutter={[24, 24]}>
+                    {/* Tiện nghi Form */}
+                    <Col xs={24} lg={12}>
+                        <Card
+                            title={
+                                <div className="survey-card-header">
+                                    <span>Form Khảo Sát Tiện Nghi</span>
+                                    <div className="survey-avg-display">
+                                        <Rate
+                                            disabled
+                                            value={parseFloat(calculateFormAverage('amenity'))}
+                                            allowHalf
+                                        />
+                                        <span className="avg-score">{calculateFormAverage('amenity')}/5.0</span>
+                                    </div>
+                                </div>
+                            }
+                            className="survey-form-card"
+                        >
+                            {surveyQuestions.filter(q => q.category === 'amenity').map((question, index) => (
+                                <Form.Item
+                                    key={question.id}
+                                    label={`${index + 1}. ${question.questionText}`}
+                                    name={`question_${question.id}`}
+                                    rules={[{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }]}
+                                >
+                                    <Rate
+                                        allowHalf
+                                        onChange={() => {
+                                            // Trigger re-render để cập nhật điểm trung bình
+                                            surveyForm.validateFields([`question_${question.id}`]);
+                                        }}
+                                    />
+                                </Form.Item>
+                            ))}
+                        </Card>
+                    </Col>
+
+                    {/* An ninh Form */}
+                    <Col xs={24} lg={12}>
+                        <Card
+                            title={
+                                <div className="survey-card-header">
+                                    <span>Form Khảo Sát An Ninh</span>
+                                    <div className="survey-avg-display">
+                                        <Rate
+                                            disabled
+                                            value={parseFloat(calculateFormAverage('security'))}
+                                            allowHalf
+                                        />
+                                        <span className="avg-score">{calculateFormAverage('security')}/5.0</span>
+                                    </div>
+                                </div>
+                            }
+                            className="survey-form-card"
+                        >
+                            {surveyQuestions.filter(q => q.category === 'security').map((question, index) => (
+                                <Form.Item
+                                    key={question.id}
+                                    label={`${index + 1}. ${question.questionText}`}
+                                    name={`question_${question.id}`}
+                                    rules={[{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }]}
+                                >
+                                    <Rate
+                                        allowHalf
+                                        onChange={() => {
+                                            // Trigger re-render để cập nhật điểm trung bình
+                                            surveyForm.validateFields([`question_${question.id}`]);
+                                        }}
+                                    />
+                                </Form.Item>
+                            ))}
+                        </Card>
+                    </Col>
+                </Row>
+
+                <Divider />
+
+                <div className="form-actions">
+                    <Button
+                        type="primary"
+                        onClick={handleSubmit}
+                        icon={<SaveOutlined />}
+                        size="large"
+                        loading={loading}
+                    >
+                        {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
+                    </Button>
+                </div>
+            </Form>
+        </div>
+    );
+
     const tabItems = isEditMode ? [
         {
             key: 'info',
             label: 'Thông tin chi tiết',
             children: roomInfoTab
+        },
+        {
+            key: 'survey-form',
+            label: 'Form khảo sát',
+            children: surveyFormTab
         }
     ] : [
         {
