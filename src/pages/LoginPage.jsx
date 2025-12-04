@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
+import { adminLoginApi } from '../util/api';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -18,19 +19,39 @@ const LoginPage = () => {
 
         setLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            // TODO: Replace with actual API call
-            if (username === 'admin' && password === 'admin') {
+        try {
+            // MOCK API - Success case
+            let response;
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            if (username === 'test1' && password === '123456') {
+                response = {
+                    code: '00',
+                    message: null,
+                    data: { username: 'test1' }
+                };
+            } else {
+                response = {
+                    code: 'AUTH_FAILED',
+                    message: 'Tên đăng nhập hoặc mật khẩu không đúng',
+                    data: null
+                };
+            }
+
+            if (response.code === '00') {
                 message.success('Đăng nhập thành công!');
                 localStorage.setItem('isAdminLoggedIn', 'true');
                 localStorage.setItem('adminUsername', username);
                 navigate('/management/rooms');
             } else {
-                message.error('Tên đăng nhập hoặc mật khẩu không đúng!');
+                message.error(response.message || 'Tên đăng nhập hoặc mật khẩu không đúng!');
             }
+        } catch (error) {
+            console.error('Login error:', error);
+            message.error('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     const handleKeyPress = (e) => {

@@ -12,10 +12,10 @@ const RoomInfoSection = ({ roomData }) => {
         images,
         rating,
         reviewCount,
-        amenities,
+        amenities = [],
         roomType,
         rules
-    } = roomData;
+    } = roomData || {};
 
     return (
         <div className="room-info-section">

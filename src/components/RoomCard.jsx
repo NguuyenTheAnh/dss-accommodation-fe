@@ -7,14 +7,30 @@ const RoomCard = ({ room }) => {
     const navigate = useNavigate();
     const {
         id,
-        image = 'https://via.placeholder.com/300x200?text=Room+Image',
-        title = 'Phòng trọ cao cấp',
-        price = '3.000.000',
-        area = '25',
-        location = 'Cầu Giấy, Hà Nội',
-        rating = 4.5,
-        distance = '1.2km đến trường'
+        roomCoverImageUrl,
+        title,
+        priceVnd,
+        areaSqm,
+        address,
+        avgAmenity,
+        avgSecurity,
+        // Legacy fields for fallback
+        image,
+        price,
+        area,
+        location,
+        rating,
+        distance
     } = room || {};
+
+    // Map new API fields to display values
+    const displayImage = roomCoverImageUrl || image || 'https://via.placeholder.com/300x200?text=Room+Image';
+    const displayTitle = title || 'Phòng trọ cao cấp';
+    const displayPrice = priceVnd ? priceVnd.toLocaleString() : (price || '3.000.000');
+    const displayArea = areaSqm || area || '25';
+    const displayLocation = address || location || 'Hà Nội';
+    const displayRating = avgAmenity || avgSecurity || rating || 4.5;
+    const displayDistance = distance || '';
 
     const handleCardClick = () => {
         navigate(`/rooms/${id}`);
@@ -27,41 +43,41 @@ const RoomCard = ({ room }) => {
             cover={
                 <div className="room-card-image-wrapper">
                     <img
-                        alt={title}
-                        src={image}
+                        alt={displayTitle}
+                        src={displayImage}
                         className="room-card-image"
                     />
                     <div className="room-card-badge">
                         <StarFilled className="star-icon" />
-                        <span>{rating}</span>
+                        <span>{typeof displayRating === 'number' ? displayRating.toFixed(1) : displayRating}</span>
                     </div>
                 </div>
             }
             onClick={handleCardClick}
         >
             <div className="room-card-content">
-                <h3 className="room-card-title">{title}</h3>
+                <h3 className="room-card-title">{displayTitle}</h3>
 
                 <div className="room-card-info">
                     <div className="info-item price-highlight">
                         <DollarOutlined className="info-icon" />
-                        <span className="price-text">{price}đ/tháng</span>
+                        <span className="price-text">{displayPrice}đ/tháng</span>
                     </div>
 
                     <div className="info-item">
                         <ExpandOutlined className="info-icon" />
-                        <span>{area}m²</span>
+                        <span>{displayArea}m²</span>
                     </div>
                 </div>
 
                 <div className="room-card-location">
                     <EnvironmentOutlined className="location-icon" />
-                    <span className="location-text">{location}</span>
+                    <span className="location-text">{displayLocation}</span>
                 </div>
 
-                {distance && (
+                {displayDistance && (
                     <div className="room-card-distance">
-                        {distance}
+                        {displayDistance}
                     </div>
                 )}
             </div>

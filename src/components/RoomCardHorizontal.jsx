@@ -7,15 +7,32 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     const navigate = useNavigate();
     const {
         id,
-        image = 'https://via.placeholder.com/400x250?text=Room+Image',
-        title = 'Phòng trọ cao cấp',
-        price = '3.000.000',
-        area = '25',
-        location = 'Cầu Giấy, Hà Nội',
-        rating = 4.5,
-        distance = '1.2km đến trường',
-        amenities = []
+        roomCoverImageUrl,
+        title,
+        priceVnd,
+        areaSqm,
+        address,
+        avgAmenity,
+        avgSecurity,
+        // Legacy fields for fallback
+        image,
+        price,
+        area,
+        location,
+        rating,
+        distance,
+        amenities
     } = room || {};
+
+    // Map new API fields to display values
+    const displayImage = roomCoverImageUrl || image || 'https://via.placeholder.com/400x250?text=Room+Image';
+    const displayTitle = title || 'Phòng trọ cao cấp';
+    const displayPrice = priceVnd ? priceVnd.toLocaleString() : (price || '3.000.000');
+    const displayArea = areaSqm || area || '25';
+    const displayLocation = address || location || 'Hà Nội';
+    const displayRating = avgAmenity || avgSecurity || rating || 4.5;
+    const displayDistance = distance || '';
+    const displayAmenities = amenities || [];
 
     const handleCardClick = () => {
         navigate(`/rooms/${id}`);
@@ -38,40 +55,40 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
                 {/* Image Section */}
                 <div className="room-image-section">
                     <img
-                        alt={title}
-                        src={image}
+                        alt={displayTitle}
+                        src={displayImage}
                         className="room-image"
                     />
                     <div className="rating-badge">
                         <StarFilled className="star-icon" />
-                        <span>{rating}</span>
+                        <span>{typeof displayRating === 'number' ? displayRating.toFixed(1) : displayRating}</span>
                     </div>
                 </div>
 
                 {/* Info Section */}
                 <div className="room-info-section">
-                    <h3 className="room-title">{title}</h3>
+                    <h3 className="room-title">{displayTitle}</h3>
 
                     <div className="room-location">
                         <EnvironmentOutlined className="location-icon" />
-                        <span>{location}</span>
+                        <span>{displayLocation}</span>
                     </div>
 
-                    {distance && (
+                    {displayDistance && (
                         <div className="room-distance">
-                            {distance}
+                            {displayDistance}
                         </div>
                     )}
 
-                    {amenities && amenities.length > 0 && (
+                    {displayAmenities && displayAmenities.length > 0 && (
                         <div className="room-amenities">
-                            {amenities.slice(0, 4).map((amenity, index) => (
+                            {displayAmenities.slice(0, 4).map((amenity, index) => (
                                 <Tag key={index} className="amenity-tag">
                                     {amenity}
                                 </Tag>
                             ))}
-                            {amenities.length > 4 && (
-                                <Tag className="amenity-tag more">+{amenities.length - 4}</Tag>
+                            {displayAmenities.length > 4 && (
+                                <Tag className="amenity-tag more">+{displayAmenities.length - 4}</Tag>
                             )}
                         </div>
                     )}
@@ -82,14 +99,14 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
                     <div className="price-info">
                         <DollarOutlined className="price-icon" />
                         <div className="price-details">
-                            <span className="price-amount">{price}đ</span>
+                            <span className="price-amount">{displayPrice}đ</span>
                             <span className="price-period">/tháng</span>
                         </div>
                     </div>
 
                     <div className="area-info">
                         <ExpandOutlined className="area-icon" />
-                        <span className="area-text">{area}m²</span>
+                        <span className="area-text">{displayArea}m²</span>
                     </div>
 
                     <button className="view-details-btn">

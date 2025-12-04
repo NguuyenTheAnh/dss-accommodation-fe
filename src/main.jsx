@@ -14,7 +14,7 @@ import RoomDetailPage from './pages/RoomDetailPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import ManagementLayout from './components/ManagementLayout.jsx';
 import RoomManagementPage from './pages/RoomManagementPage.jsx';
-import SurveyFormPage from './pages/SurveyFormPage.jsx';
+import SurveyQuestionsPage from './pages/SurveyQuestionsPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const router = createBrowserRouter([
@@ -53,8 +53,8 @@ const router = createBrowserRouter([
         element: <RoomManagementPage />
       },
       {
-        path: "survey",
-        element: <SurveyFormPage />
+        path: "surveys",
+        element: <SurveyQuestionsPage />
       },
     ]
   },

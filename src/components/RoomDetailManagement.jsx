@@ -1,11 +1,125 @@
-import { useState } from 'react';
-import { Button, Tabs, Form, Input, InputNumber, Tag, Divider, Card, Rate } from 'antd';
+import { useState, useEffect } from 'react';
+import { Button, Tabs, Form, Input, InputNumber, Tag, Divider, Card, Rate, Select, message } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { getRoomDetailApi, updateRoomApi, getAllAreaTypesApi } from '../util/api';
+import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 import './RoomDetailManagement.css';
 
 const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
     const [form] = Form.useForm();
     const [activeTab, setActiveTab] = useState('details');
+    const [roomDetail, setRoomDetail] = useState(null);
+    const [areaTypes, setAreaTypes] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (room?.id) {
+            fetchRoomDetail();
+        }
+        fetchAreaTypes();
+    }, [room?.id]);
+
+    const fetchRoomDetail = async () => {
+        try {
+            // MOCK API - Success case with detailed room info
+            const mockRoomDetails = {
+                1: {
+                    id: 1,
+                    landlordUserId: 1,
+                    areaTypeId: 1,
+                    title: 'Ph\u00f2ng tr\u1ecd cao c\u1ea5p g\u1ea7n \u0110H B\u00e1ch Khoa',
+                    description: 'Ph\u00f2ng r\u1ed9ng r\u00e3i, \u0111\u1ea7y \u0111\u1ee7 ti\u1ec7n nghi, an ninh 24/7',
+                    address: '123 \u0110\u1ea1i C\u1ed3 Vi\u1ec7t, Hai B\u00e0 Tr\u01b0ng, H\u00e0 N\u1ed9i',
+                    latitude: 21.0285,
+                    longitude: 105.8542,
+                    priceVnd: 3500000,
+                    areaSqm: 25.5,
+                    roomType: 'SINGLE',
+                    status: 'AVAILABLE',
+                    avgAmenity: 4.8,
+                    avgSecurity: 4.5,
+                    roomCoverImageId: 1,
+                    roomCoverImageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500',
+                    roomNotCoverImageIds: [2, 3],
+                    surveyAnswers: [
+                        { id: 1, surveyQuestionId: 1, point: 5 },
+                        { id: 2, surveyQuestionId: 2, point: 5 },
+                        { id: 3, surveyQuestionId: 3, point: 4 }
+                    ]
+                }
+            };
+
+            const response = {
+                code: '00',
+                message: null,
+                data: mockRoomDetails[room.id] || {
+                    id: room.id,
+                    landlordUserId: 1,
+                    areaTypeId: 1,
+                    title: room.title || 'Ph\u00f2ng ch\u01b0a c\u00f3 t\u00ean',
+                    description: room.description || '',
+                    address: room.address || '',
+                    latitude: room.latitude || 21.0285,
+                    longitude: room.longitude || 105.8542,
+                    priceVnd: room.priceVnd || 0,
+                    areaSqm: room.areaSqm || 0,
+                    roomType: room.roomType || 'SINGLE',
+                    status: room.status || 'AVAILABLE',
+                    avgAmenity: room.avgAmenity || 0,
+                    avgSecurity: room.avgSecurity || 0,
+                    roomCoverImageId: room.roomCoverImageId || null,
+                    roomCoverImageUrl: room.roomCoverImageUrl || null,
+                    roomNotCoverImageIds: [],
+                    surveyAnswers: []
+                }
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 400));
+
+            if (response.code === '00' && response.data) {
+                setRoomDetail(response.data);
+                // Map API fields to form
+                form.setFieldsValue({
+                    title: response.data.title,
+                    description: response.data.description,
+                    address: response.data.address,
+                    latitude: response.data.latitude,
+                    longitude: response.data.longitude,
+                    priceVnd: response.data.priceVnd,
+                    areaSqm: response.data.areaSqm,
+                    roomType: response.data.roomType,
+                    status: response.data.status,
+                    areaTypeId: response.data.areaTypeId
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching room detail:', error);
+            message.error('Không thể tải chi tiết phòng');
+        }
+    };
+
+    const fetchAreaTypes = async () => {
+        try {
+            // MOCK API - Success case
+            const response = {
+                code: '00',
+                message: null,
+                data: [
+                    { id: 1, name: 'G\u1ea7n tr\u01b0\u1eddng' },
+                    { id: 2, name: 'Trung t\u00e2m' },
+                    { id: 3, name: 'Ngo\u1ea1i th\u00e0nh' }
+                ]
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            if (response.code === '00' && response.data) {
+                setAreaTypes(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching area types:', error);
+        }
+    };
 
     // Mock survey data
     const surveyData = [
@@ -39,8 +153,50 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         }
     ];
 
-    const handleSubmit = (values) => {
-        onSave({ ...room, ...values });
+    const handleSubmit = async (values) => {
+        try {
+            setLoading(true);
+            const updateData = {
+                id: room.id,
+                landlordUserId: roomDetail?.landlordUserId || 1,
+                title: values.title,
+                description: values.description,
+                address: values.address,
+                latitude: values.latitude,
+                longitude: values.longitude,
+                priceVnd: values.priceVnd,
+                areaSqm: values.areaSqm,
+                roomType: values.roomType,
+                status: values.status,
+                areaTypeId: values.areaTypeId,
+                surveyAnswers: roomDetail?.surveyAnswers || [],
+                roomCoverImageId: roomDetail?.roomCoverImageId || null,
+                roomNotCoverImageIds: roomDetail?.roomNotCoverImageIds || []
+            };
+
+            // MOCK API - Success case
+            const response = {
+                code: '00',
+                message: null,
+                data: updateData
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 600));
+
+            if (response.code === '00') {
+                message.success('Cập nhật phòng thành công');
+                if (onSave) {
+                    onSave(response.data);
+                }
+            } else {
+                message.error(response.message || 'Cập nhật phòng thất bại');
+            }
+        } catch (error) {
+            console.error('Error updating room:', error);
+            message.error('Có lỗi xảy ra khi cập nhật phòng');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const amenitiesMap = {
@@ -88,7 +244,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                 <div className="form-row">
                     <Form.Item
                         label="Tên phòng"
-                        name="name"
+                        name="title"
                         rules={[{ required: true, message: 'Vui lòng nhập tên phòng' }]}
                         className="form-item-half"
                     >
@@ -105,12 +261,27 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
                         className="form-item-half"
                     >
-                        <select className="status-select" disabled={mode === 'view'}>
-                            <option value="available">Còn trống</option>
-                            <option value="rented">Đã thuê</option>
-                        </select>
+                        <Select
+                            placeholder="Chọn trạng thái"
+                            disabled={mode === 'view'}
+                            size="large"
+                        >
+                            <Select.Option value={ROOM_STATUS.AVAILABLE}>{ROOM_STATUS_LABELS[ROOM_STATUS.AVAILABLE]}</Select.Option>
+                            <Select.Option value={ROOM_STATUS.RENTED}>{ROOM_STATUS_LABELS[ROOM_STATUS.RENTED]}</Select.Option>
+                        </Select>
                     </Form.Item>
                 </div>
+
+                <Form.Item
+                    label="Mô tả"
+                    name="description"
+                >
+                    <Input.TextArea
+                        rows={3}
+                        placeholder="Mô tả chi tiết về phòng..."
+                        disabled={mode === 'view'}
+                    />
+                </Form.Item>
 
                 <Form.Item
                     label="Địa chỉ"
@@ -126,10 +297,42 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                 <div className="form-row">
                     <Form.Item
+                        label="Vĩ độ (Latitude)"
+                        name="latitude"
+                        rules={[{ required: true, message: 'Vui lòng nhập vĩ độ' }]}
+                        className="form-item-half"
+                    >
+                        <InputNumber
+                            style={{ width: '100%' }}
+                            step={0.000001}
+                            placeholder="VD: 21.0285"
+                            disabled={mode === 'view'}
+                            size="large"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Kinh độ (Longitude)"
+                        name="longitude"
+                        rules={[{ required: true, message: 'Vui lòng nhập kinh độ' }]}
+                        className="form-item-half"
+                    >
+                        <InputNumber
+                            style={{ width: '100%' }}
+                            step={0.000001}
+                            placeholder="VD: 105.8542"
+                            disabled={mode === 'view'}
+                            size="large"
+                        />
+                    </Form.Item>
+                </div>
+
+                <div className="form-row">
+                    <Form.Item
                         label="Giá thuê (VNĐ)"
-                        name="price"
+                        name="priceVnd"
                         rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}
-                        className="form-item-third"
+                        className="form-item-half"
                     >
                         <InputNumber
                             style={{ width: '100%' }}
@@ -144,33 +347,55 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                     <Form.Item
                         label="Diện tích (m²)"
-                        name="area"
+                        name="areaSqm"
                         rules={[{ required: true, message: 'Vui lòng nhập diện tích' }]}
-                        className="form-item-third"
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            min={0}
-                            placeholder="VD: 25"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Khoảng cách đến trường (km)"
-                        name="distance"
-                        rules={[{ required: true, message: 'Vui lòng nhập khoảng cách' }]}
-                        className="form-item-third"
+                        className="form-item-half"
                     >
                         <InputNumber
                             style={{ width: '100%' }}
                             min={0}
                             step={0.1}
-                            placeholder="VD: 1.5"
+                            placeholder="VD: 25"
                             disabled={mode === 'view'}
                             size="large"
                         />
+                    </Form.Item>
+                </div>
+
+                <div className="form-row">
+                    <Form.Item
+                        label="Loại phòng"
+                        name="roomType"
+                        rules={[{ required: true, message: 'Vui lòng chọn loại phòng' }]}
+                        className="form-item-half"
+                    >
+                        <Select
+                            placeholder="Chọn loại phòng"
+                            disabled={mode === 'view'}
+                            size="large"
+                        >
+                            <Select.Option value={ROOM_TYPE.SINGLE}>{ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE]}</Select.Option>
+                            <Select.Option value={ROOM_TYPE.SHARED}>{ROOM_TYPE_LABELS[ROOM_TYPE.SHARED]}</Select.Option>
+                            <Select.Option value={ROOM_TYPE.STUDIO}>{ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO]}</Select.Option>
+                            <Select.Option value={ROOM_TYPE.APARTMENT}>{ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT]}</Select.Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Khu vực"
+                        name="areaTypeId"
+                        rules={[{ required: true, message: 'Vui lòng chọn khu vực' }]}
+                        className="form-item-half"
+                    >
+                        <Select
+                            placeholder="Chọn khu vực"
+                            disabled={mode === 'view'}
+                            size="large"
+                        >
+                            {areaTypes.map(area => (
+                                <Select.Option key={area.id} value={area.id}>{area.name}</Select.Option>
+                            ))}
+                        </Select>
                     </Form.Item>
                 </div>
 
@@ -181,6 +406,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                             htmlType="submit"
                             icon={<SaveOutlined />}
                             size="large"
+                            loading={loading}
                         >
                             Lưu thay đổi
                         </Button>
@@ -299,9 +525,9 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                     Quay lại
                 </Button>
                 <div className="detail-title">
-                    <h1>{room.name}</h1>
-                    <Tag color={room.status === 'available' ? 'green' : 'red'}>
-                        {room.status === 'available' ? 'Còn trống' : 'Đã thuê'}
+                    <h1>{roomDetail?.title || room?.title || room?.name}</h1>
+                    <Tag color={room.status === ROOM_STATUS.AVAILABLE ? 'green' : 'red'}>
+                        {ROOM_STATUS_LABELS[room.status] || (room.status === 'available' ? 'Còn trống' : 'Đã thuê')}
                     </Tag>
                 </div>
             </div>

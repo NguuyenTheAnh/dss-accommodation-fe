@@ -39,10 +39,10 @@ const ManagementSidebar = () => {
             label: 'Quản lý phòng'
         },
         {
-            key: 'survey',
-            path: '/management/survey',
+            key: 'surveys',
+            path: '/management/surveys',
             icon: <FormOutlined />,
-            label: 'Form khảo sát'
+            label: 'Câu hỏi khảo sát'
         }
     ];
 

@@ -1,13 +1,76 @@
+import { useState, useEffect } from 'react';
 import { Button, Slider, Select, Rate, Divider } from 'antd';
 import { FilterOutlined, ReloadOutlined } from '@ant-design/icons';
+import { getAllAreaTypesApi } from '../util/api';
+import { ROOM_TYPE, ROOM_TYPE_LABELS } from '../util/constants';
 import './SidebarFilter.css';
 
 const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
+    const [areaTypes, setAreaTypes] = useState([]);
+    const [schools, setSchools] = useState([]);
+
+    useEffect(() => {
+        fetchAreaTypes();
+        fetchSchools();
+    }, []);
+
+    const fetchSchools = async () => {
+        try {
+            // MOCK API - Success case với 1 trường HUST
+            const response = {
+                code: '00',
+                message: null,
+                data: [
+                    { id: 1, name: 'HUST - Đại học Bách Khoa Hà Nội' }
+                ]
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            if (response.code === '00' && response.data) {
+                const schoolOptions = response.data.map(school => ({
+                    value: school.id,
+                    label: school.name
+                }));
+                setSchools(schoolOptions);
+            }
+        } catch (error) {
+            console.error('Error fetching schools:', error);
+        }
+    };
+
+    const fetchAreaTypes = async () => {
+        try {
+            // MOCK API - Success case
+            const response = {
+                code: '00',
+                message: null,
+                data: [
+                    { id: 1, name: 'G\u1ea7n tr\u01b0\u1eddng' },
+                    { id: 2, name: 'Trung t\u00e2m' },
+                    { id: 3, name: 'Ngo\u1ea1i th\u00e0nh' }
+                ]
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            if (response.code === '00' && response.data) {
+                const areaOptions = response.data.map(area => ({
+                    value: area.id,
+                    label: area.name
+                }));
+                setAreaTypes(areaOptions);
+            }
+        } catch (error) {
+            console.error('Error fetching area types:', error);
+        }
+    };
+
     const roomTypes = [
-        { value: 'single', label: 'Phòng đơn' },
-        { value: 'double', label: 'Phòng đôi' },
-        { value: 'apartment', label: 'Chung cư mini' },
-        { value: 'house', label: 'Nhà nguyên căn' }
+        { value: ROOM_TYPE.SINGLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE] },
+        { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] },
+        { value: ROOM_TYPE.STUDIO, label: ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO] },
+        { value: ROOM_TYPE.APARTMENT, label: ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT] }
     ];
 
     const amenitiesList = [
@@ -45,6 +108,25 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
             </div>
 
             <div className="filter-content">
+                {/* School Selection */}
+                {schools.length > 0 && (
+                    <>
+                        <div className="filter-section">
+                            <label className="filter-label">Trường học</label>
+                            <Select
+                                placeholder="Chọn trường"
+                                options={schools}
+                                value={filters.schoolId}
+                                onChange={(value) => handleFilterUpdate('schoolId', value)}
+                                className="filter-select"
+                                allowClear
+                                style={{ width: '100%' }}
+                            />
+                        </div>
+                        <Divider style={{ margin: '16px 0' }} />
+                    </>
+                )}
+
                 {/* Price Range */}
                 <div className="filter-section">
                     <label className="filter-label">Khoảng giá (VNĐ/tháng)</label>
@@ -65,18 +147,22 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
 
                 <Divider style={{ margin: '16px 0' }} />
 
-                {/* Distance */}
+                {/* Distance Range */}
                 <div className="filter-section">
                     <label className="filter-label">Khoảng cách đến trường (km)</label>
                     <Slider
+                        range
                         min={0}
                         max={10}
                         step={0.5}
-                        value={filters.distance || 5}
-                        onChange={(value) => handleFilterUpdate('distance', value)}
+                        value={filters.distanceRange || [0, 5]}
+                        onChange={(value) => handleFilterUpdate('distanceRange', value)}
                         marks={{ 0: '0km', 5: '5km', 10: '10km' }}
                         className="custom-slider"
                     />
+                    <div className="range-display">
+                        {(filters.distanceRange || [0, 5])[0]}km - {(filters.distanceRange || [0, 5])[1]}km
+                    </div>
                 </div>
 
                 <Divider style={{ margin: '16px 0' }} />
@@ -100,18 +186,6 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
 
                 <Divider style={{ margin: '16px 0' }} />
 
-                {/* Rating */}
-                <div className="filter-section">
-                    <label className="filter-label">Đánh giá tối thiểu</label>
-                    <Rate
-                        value={filters.rating || 0}
-                        onChange={(value) => handleFilterUpdate('rating', value)}
-                        className="custom-rate"
-                    />
-                </div>
-
-                <Divider style={{ margin: '16px 0' }} />
-
                 {/* Room Type */}
                 <div className="filter-section">
                     <label className="filter-label">Loại phòng</label>
@@ -128,19 +202,61 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
 
                 <Divider style={{ margin: '16px 0' }} />
 
-                {/* Amenities */}
+                {/* Area Type */}
+                {areaTypes.length > 0 && (
+                    <>
+                        <div className="filter-section">
+                            <label className="filter-label">Loại khu vực</label>
+                            <Select
+                                placeholder="Chọn khu vực"
+                                options={areaTypes}
+                                value={filters.areaTypeId}
+                                onChange={(value) => handleFilterUpdate('areaTypeId', value)}
+                                className="filter-select"
+                                allowClear
+                                style={{ width: '100%' }}
+                            />
+                        </div>
+                        <Divider style={{ margin: '16px 0' }} />
+                    </>
+                )}
+
+                {/* Amenity Score Range */}
                 <div className="filter-section">
-                    <label className="filter-label">Tiện nghi</label>
-                    <Select
-                        mode="multiple"
-                        placeholder="Chọn tiện nghi"
-                        options={amenitiesList}
-                        value={filters.amenities || []}
-                        onChange={(value) => handleFilterUpdate('amenities', value)}
-                        className="filter-select"
-                        maxTagCount="responsive"
-                        style={{ width: '100%' }}
+                    <label className="filter-label">Mức độ tiện nghi (1-5)</label>
+                    <Slider
+                        range
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        value={filters.amenityRange || [1, 5]}
+                        onChange={(value) => handleFilterUpdate('amenityRange', value)}
+                        marks={{ 1: '1', 3: '3', 5: '5' }}
+                        className="custom-slider"
                     />
+                    <div className="range-display">
+                        {(filters.amenityRange || [1, 5])[0].toFixed(1)} - {(filters.amenityRange || [1, 5])[1].toFixed(1)}
+                    </div>
+                </div>
+
+                <Divider style={{ margin: '16px 0' }} />
+
+                {/* Security Score Range */}
+                <div className="filter-section">
+                    <label className="filter-label">Mức độ an toàn (1-5)</label>
+                    <Slider
+                        range
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        value={filters.securityRange || [1, 5]}
+                        onChange={(value) => handleFilterUpdate('securityRange', value)}
+                        marks={{ 1: '1', 3: '3', 5: '5' }}
+                        className="custom-slider"
+                    />
+                    <div className="range-display">
+                        {(filters.securityRange || [1, 5])[0].toFixed(1)} - {(filters.securityRange || [1, 5])[1].toFixed(1)}
+                    </div>
                 </div>
             </div>
         </div>
