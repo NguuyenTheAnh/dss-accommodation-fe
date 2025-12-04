@@ -1,0 +1,76 @@
+.room-management-page {
+    padding: var(--spacing-xl);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.page-title {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.page-content {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Status Select */
+.status-select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.status-select:hover {
+    border-color: var(--primary-green);
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 2px rgba(13, 177, 75, 0.1);
+}
+
+/* Form Actions */
+.form-actions {
+    margin-top: var(--spacing-lg);
+    margin-bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .room-management-page {
+        padding: var(--spacing-lg);
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .page-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .page-content {
+        padding: var(--spacing-md);
+        overflow-x: auto;
+    }
+}

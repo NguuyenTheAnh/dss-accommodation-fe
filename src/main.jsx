@@ -11,6 +11,11 @@ import {
 import HomePage from './pages/HomePage.jsx';
 import SearchResultPage from './pages/SearchResultPage.jsx';
 import RoomDetailPage from './pages/RoomDetailPage.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import ManagementLayout from './components/ManagementLayout.jsx';
+import RoomManagementPage from './pages/RoomManagementPage.jsx';
+import SurveyFormPage from './pages/SurveyFormPage.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +33,28 @@ const router = createBrowserRouter([
       {
         path: "rooms/:id",
         element: <RoomDetailPage />
+      },
+    ]
+  },
+  {
+    path: "/management/login",
+    element: <LoginPage />
+  },
+  {
+    path: "/management",
+    element: (
+      <ProtectedRoute>
+        <ManagementLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: "rooms",
+        element: <RoomManagementPage />
+      },
+      {
+        path: "survey",
+        element: <SurveyFormPage />
       },
     ]
   },

@@ -1,0 +1,109 @@
+.survey-form-page {
+    padding: var(--spacing-xl);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: var(--spacing-xl);
+}
+
+.page-title {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-dark);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.page-description {
+    font-size: var(--font-size-base);
+    color: var(--text-light);
+    margin: 0;
+}
+
+.survey-card {
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius-lg);
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-green);
+    margin: 0 0 var(--spacing-lg) 0;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-green);
+}
+
+/* Form Actions */
+.form-actions {
+    margin-top: var(--spacing-xl);
+    margin-bottom: 0;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+/* Rate Custom Styles */
+:global(.ant-rate) {
+    font-size: 32px;
+}
+
+:global(.ant-rate-star) {
+    margin-right: var(--spacing-md);
+}
+
+:global(.ant-rate-star-full .anticon),
+:global(.ant-rate-star-half .anticon) {
+    color: var(--primary-green);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .survey-form-page {
+        padding: var(--spacing-lg);
+    }
+
+    .page-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .survey-card {
+        padding: var(--spacing-md);
+    }
+
+    .form-section {
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-lg);
+    }
+
+    .section-title {
+        font-size: var(--font-size-base);
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    :global(.ant-rate) {
+        font-size: 28px;
+    }
+}
