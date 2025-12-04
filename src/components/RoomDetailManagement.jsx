@@ -715,10 +715,12 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     <div className="survey-avg-display">
                                         <Rate
                                             disabled
-                                            value={parseFloat(calculateFormAverage('amenity'))}
+                                            value={parseFloat(isEditMode ? calculateFormAverage('amenity') : calculateCategoryAverage('amenity'))}
                                             allowHalf
                                         />
-                                        <span className="avg-score">{calculateFormAverage('amenity')}/5.0</span>
+                                        <span className="avg-score">
+                                            {isEditMode ? calculateFormAverage('amenity') : calculateCategoryAverage('amenity')}/5.0
+                                        </span>
                                     </div>
                                 </div>
                             }
@@ -729,13 +731,16 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     key={question.id}
                                     label={`${index + 1}. ${question.questionText}`}
                                     name={`question_${question.id}`}
-                                    rules={[{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }]}
+                                    rules={isEditMode ? [{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }] : []}
                                 >
                                     <Rate
                                         allowHalf
+                                        disabled={!isEditMode}
                                         onChange={() => {
-                                            // Trigger re-render để cập nhật điểm trung bình
-                                            surveyForm.validateFields([`question_${question.id}`]);
+                                            if (isEditMode) {
+                                                // Trigger re-render để cập nhật điểm trung bình
+                                                surveyForm.validateFields([`question_${question.id}`]);
+                                            }
                                         }}
                                     />
                                 </Form.Item>
@@ -752,10 +757,12 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     <div className="survey-avg-display">
                                         <Rate
                                             disabled
-                                            value={parseFloat(calculateFormAverage('security'))}
+                                            value={parseFloat(isEditMode ? calculateFormAverage('security') : calculateCategoryAverage('security'))}
                                             allowHalf
                                         />
-                                        <span className="avg-score">{calculateFormAverage('security')}/5.0</span>
+                                        <span className="avg-score">
+                                            {isEditMode ? calculateFormAverage('security') : calculateCategoryAverage('security')}/5.0
+                                        </span>
                                     </div>
                                 </div>
                             }
@@ -766,13 +773,16 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     key={question.id}
                                     label={`${index + 1}. ${question.questionText}`}
                                     name={`question_${question.id}`}
-                                    rules={[{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }]}
+                                    rules={isEditMode ? [{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }] : []}
                                 >
                                     <Rate
                                         allowHalf
+                                        disabled={!isEditMode}
                                         onChange={() => {
-                                            // Trigger re-render để cập nhật điểm trung bình
-                                            surveyForm.validateFields([`question_${question.id}`]);
+                                            if (isEditMode) {
+                                                // Trigger re-render để cập nhật điểm trung bình
+                                                surveyForm.validateFields([`question_${question.id}`]);
+                                            }
                                         }}
                                     />
                                 </Form.Item>
@@ -781,24 +791,28 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                     </Col>
                 </Row>
 
-                <Divider />
+                {isEditMode && (
+                    <>
+                        <Divider />
 
-                <div className="form-actions">
-                    <Button
-                        type="primary"
-                        onClick={handleSubmit}
-                        icon={<SaveOutlined />}
-                        size="large"
-                        loading={loading}
-                    >
-                        {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
-                    </Button>
-                </div>
+                        <div className="form-actions">
+                            <Button
+                                type="primary"
+                                onClick={handleSubmit}
+                                icon={<SaveOutlined />}
+                                size="large"
+                                loading={loading}
+                            >
+                                {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
+                            </Button>
+                        </div>
+                    </>
+                )}
             </Form>
         </div>
     );
 
-    const tabItems = isEditMode ? [
+    const tabItems = [
         {
             key: 'info',
             label: 'Thông tin chi tiết',
@@ -808,17 +822,6 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
             key: 'survey-form',
             label: 'Form khảo sát',
             children: surveyFormTab
-        }
-    ] : [
-        {
-            key: 'info',
-            label: 'Thông tin chi tiết',
-            children: roomInfoTab
-        },
-        {
-            key: 'survey',
-            label: 'Kết quả khảo sát',
-            children: surveyTab
         }
     ];
 
