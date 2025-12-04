@@ -1,23 +1,68 @@
 import { useState, useEffect } from 'react';
-import { Button, Tabs, Form, Input, InputNumber, Tag, Divider, Card, Rate, Select, message } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
-import { getRoomDetailApi, updateRoomApi, getAllAreaTypesApi } from '../util/api';
+import { Button, Tabs, Tag, Card, Divider, Row, Col, Image, Rate, message, List, Form, Input, InputNumber, Select } from 'antd';
+import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined } from '@ant-design/icons';
+import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi } from '../util/api';
 import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 import './RoomDetailManagement.css';
 
+const { TextArea } = Input;
+const { Option } = Select;
+
 const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
-    const [form] = Form.useForm();
-    const [activeTab, setActiveTab] = useState('details');
+    const [activeTab, setActiveTab] = useState('info');
     const [roomDetail, setRoomDetail] = useState(null);
+    const [surveyQuestions, setSurveyQuestions] = useState([]);
+    const [surveyAnswers, setSurveyAnswers] = useState([]);
     const [areaTypes, setAreaTypes] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [form] = Form.useForm();
+
+    const isEditMode = mode === 'edit' || mode === 'add';
+    const isAddMode = mode === 'add';
 
     useEffect(() => {
+        fetchAreaTypes();
         if (room?.id) {
             fetchRoomDetail();
+            fetchSurveyData();
+        } else if (isAddMode) {
+            // Chế độ thêm mới - sử dụng dữ liệu từ room prop
+            setRoomDetail(room);
+            form.setFieldsValue({
+                title: room.title || '',
+                description: room.description || '',
+                address: room.address || '',
+                latitude: room.latitude || 21.0285,
+                longitude: room.longitude || 105.8542,
+                priceVnd: room.priceVnd || 0,
+                areaSqm: room.areaSqm || 0,
+                roomType: room.roomType || 'SINGLE',
+                status: room.status || 'AVAILABLE',
+                areaTypeId: room.areaTypeId || 1
+            });
         }
-        fetchAreaTypes();
-    }, [room?.id]);
+    }, [room?.id, mode]);
+
+    const fetchAreaTypes = async () => {
+        try {
+            // MOCK API
+            const response = {
+                code: '00',
+                message: null,
+                data: [
+                    { id: 1, name: 'Gần trường' },
+                    { id: 2, name: 'Trung tâm' },
+                    { id: 3, name: 'Ngoại thành' }
+                ]
+            };
+            await new Promise(resolve => setTimeout(resolve, 300));
+            if (response.code === '00') {
+                setAreaTypes(response.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching area types:', error);
+        }
+    };
 
     const fetchRoomDetail = async () => {
         try {
@@ -27,9 +72,10 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                     id: 1,
                     landlordUserId: 1,
                     areaTypeId: 1,
-                    title: 'Ph\u00f2ng tr\u1ecd cao c\u1ea5p g\u1ea7n \u0110H B\u00e1ch Khoa',
-                    description: 'Ph\u00f2ng r\u1ed9ng r\u00e3i, \u0111\u1ea7y \u0111\u1ee7 ti\u1ec7n nghi, an ninh 24/7',
-                    address: '123 \u0110\u1ea1i C\u1ed3 Vi\u1ec7t, Hai B\u00e0 Tr\u01b0ng, H\u00e0 N\u1ed9i',
+                    areaTypeName: 'Gần trường',
+                    title: 'Phòng trọ cao cấp gần ĐH Bách Khoa',
+                    description: 'Phòng rộng rãi, đầy đủ tiện nghi, an ninh 24/7. Gần trường học, siêu thị, bệnh viện. Chủ nhà thân thiện, hỗ trợ nhiệt tình.',
+                    address: '123 Đại Cồ Việt, Hai Bà Trưng, Hà Nội',
                     latitude: 21.0285,
                     longitude: 105.8542,
                     priceVnd: 3500000,
@@ -38,14 +84,17 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                     status: 'AVAILABLE',
                     avgAmenity: 4.8,
                     avgSecurity: 4.5,
-                    roomCoverImageId: 1,
                     roomCoverImageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500',
-                    roomNotCoverImageIds: [2, 3],
-                    surveyAnswers: [
-                        { id: 1, surveyQuestionId: 1, point: 5 },
-                        { id: 2, surveyQuestionId: 2, point: 5 },
-                        { id: 3, surveyQuestionId: 3, point: 4 }
-                    ]
+                    roomNotCoverImageUrls: [
+                        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500',
+                        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500',
+                        'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=500'
+                    ],
+                    amenities: ['WiFi', 'Điều hòa', 'Máy giặt', 'Bếp', 'Chỗ đậu xe', 'An ninh 24/7'],
+                    landlord: {
+                        fullName: 'Nguyễn Văn A',
+                        phoneNumber: '0912345678'
+                    }
                 }
             };
 
@@ -53,24 +102,9 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                 code: '00',
                 message: null,
                 data: mockRoomDetails[room.id] || {
+                    ...mockRoomDetails[1],
                     id: room.id,
-                    landlordUserId: 1,
-                    areaTypeId: 1,
-                    title: room.title || 'Ph\u00f2ng ch\u01b0a c\u00f3 t\u00ean',
-                    description: room.description || '',
-                    address: room.address || '',
-                    latitude: room.latitude || 21.0285,
-                    longitude: room.longitude || 105.8542,
-                    priceVnd: room.priceVnd || 0,
-                    areaSqm: room.areaSqm || 0,
-                    roomType: room.roomType || 'SINGLE',
-                    status: room.status || 'AVAILABLE',
-                    avgAmenity: room.avgAmenity || 0,
-                    avgSecurity: room.avgSecurity || 0,
-                    roomCoverImageId: room.roomCoverImageId || null,
-                    roomCoverImageUrl: room.roomCoverImageUrl || null,
-                    roomNotCoverImageIds: [],
-                    surveyAnswers: []
+                    title: room.title || 'Phòng chưa có tên'
                 }
             };
 
@@ -78,19 +112,21 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             if (response.code === '00' && response.data) {
                 setRoomDetail(response.data);
-                // Map API fields to form
-                form.setFieldsValue({
-                    title: response.data.title,
-                    description: response.data.description,
-                    address: response.data.address,
-                    latitude: response.data.latitude,
-                    longitude: response.data.longitude,
-                    priceVnd: response.data.priceVnd,
-                    areaSqm: response.data.areaSqm,
-                    roomType: response.data.roomType,
-                    status: response.data.status,
-                    areaTypeId: response.data.areaTypeId
-                });
+                // Set form values cho chế độ edit
+                if (isEditMode) {
+                    form.setFieldsValue({
+                        title: response.data.title,
+                        description: response.data.description,
+                        address: response.data.address,
+                        latitude: response.data.latitude,
+                        longitude: response.data.longitude,
+                        priceVnd: response.data.priceVnd,
+                        areaSqm: response.data.areaSqm,
+                        roomType: response.data.roomType,
+                        status: response.data.status,
+                        areaTypeId: response.data.areaTypeId
+                    });
+                }
             }
         } catch (error) {
             console.error('Error fetching room detail:', error);
@@ -98,421 +134,515 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         }
     };
 
-    const fetchAreaTypes = async () => {
+    const fetchSurveyData = async () => {
         try {
-            // MOCK API - Success case
-            const response = {
+            // MOCK API - Get survey questions
+            const questionsResponse = {
                 code: '00',
                 message: null,
                 data: [
-                    { id: 1, name: 'G\u1ea7n tr\u01b0\u1eddng' },
-                    { id: 2, name: 'Trung t\u00e2m' },
-                    { id: 3, name: 'Ngo\u1ea1i th\u00e0nh' }
+                    { id: 1, questionText: 'Phòng có sạch sẽ không?', questionOrder: 1 },
+                    { id: 2, questionText: 'Chủ nhà có thân thiện không?', questionOrder: 2 },
+                    { id: 3, questionText: 'Giá thuê có hợp lý không?', questionOrder: 3 },
+                    { id: 4, questionText: 'Vị trí có thuận tiện không?', questionOrder: 4 },
+                    { id: 5, questionText: 'An ninh có tốt không?', questionOrder: 5 }
+                ]
+            };
+
+            // MOCK API - Get survey answers for this room
+            const answersResponse = {
+                code: '00',
+                message: null,
+                data: [
+                    { surveyQuestionId: 1, avgPoint: 4.8, totalAnswers: 15 },
+                    { surveyQuestionId: 2, avgPoint: 4.9, totalAnswers: 15 },
+                    { surveyQuestionId: 3, avgPoint: 4.2, totalAnswers: 15 },
+                    { surveyQuestionId: 4, avgPoint: 4.7, totalAnswers: 15 },
+                    { surveyQuestionId: 5, avgPoint: 4.5, totalAnswers: 15 }
                 ]
             };
 
             await new Promise(resolve => setTimeout(resolve, 300));
 
-            if (response.code === '00' && response.data) {
-                setAreaTypes(response.data);
+            if (questionsResponse.code === '00') {
+                setSurveyQuestions(questionsResponse.data);
+            }
+            if (answersResponse.code === '00') {
+                setSurveyAnswers(answersResponse.data);
             }
         } catch (error) {
-            console.error('Error fetching area types:', error);
+            console.error('Error fetching survey data:', error);
         }
     };
 
-    // Mock survey data
-    const surveyData = [
-        {
-            id: 1,
-            studentName: 'Nguyễn Văn A',
-            email: 'nguyenvana@email.com',
-            phone: '0912345678',
-            school: 'Đại học Bách Khoa Hà Nội',
-            priceRange: '3m-4m',
-            areaRange: '25-30',
-            maxDistance: '1-2',
-            amenities: ['wifi', 'ac', 'parking'],
-            satisfaction: 4,
-            feedback: 'Hệ thống rất hữu ích, giúp tôi tìm được phòng phù hợp.',
-            submittedAt: '2025-12-01 10:30'
-        },
-        {
-            id: 2,
-            studentName: 'Trần Thị B',
-            email: 'tranthib@email.com',
-            phone: '0987654321',
-            school: 'Đại học Quốc Gia Hà Nội',
-            priceRange: '2m-3m',
-            areaRange: '20-25',
-            maxDistance: '2-3',
-            amenities: ['wifi', 'security', 'laundry'],
-            satisfaction: 5,
-            feedback: 'Rất hài lòng với chất lượng phòng và giá cả.',
-            submittedAt: '2025-12-02 14:20'
-        }
-    ];
+    // Calculate average score from survey answers
+    const calculateAverageScore = () => {
+        if (surveyAnswers.length === 0) return 0;
+        const total = surveyAnswers.reduce((sum, answer) => sum + answer.avgPoint, 0);
+        return (total / surveyAnswers.length).toFixed(1);
+    };
 
+    // Handle form submit
     const handleSubmit = async (values) => {
         try {
             setLoading(true);
-            const updateData = {
-                id: room.id,
-                landlordUserId: roomDetail?.landlordUserId || 1,
-                title: values.title,
-                description: values.description,
-                address: values.address,
-                latitude: values.latitude,
-                longitude: values.longitude,
-                priceVnd: values.priceVnd,
-                areaSqm: values.areaSqm,
-                roomType: values.roomType,
-                status: values.status,
-                areaTypeId: values.areaTypeId,
-                surveyAnswers: roomDetail?.surveyAnswers || [],
-                roomCoverImageId: roomDetail?.roomCoverImageId || null,
-                roomNotCoverImageIds: roomDetail?.roomNotCoverImageIds || []
+            const updatedRoom = {
+                ...roomDetail,
+                ...values
             };
 
-            // MOCK API - Success case
-            const response = {
-                code: '00',
-                message: null,
-                data: updateData
-            };
-
-            await new Promise(resolve => setTimeout(resolve, 600));
-
-            if (response.code === '00') {
-                message.success('Cập nhật phòng thành công');
-                if (onSave) {
-                    onSave(response.data);
-                }
-            } else {
-                message.error(response.message || 'Cập nhật phòng thất bại');
+            if (onSave) {
+                await onSave(updatedRoom);
             }
         } catch (error) {
-            console.error('Error updating room:', error);
-            message.error('Có lỗi xảy ra khi cập nhật phòng');
+            console.error('Error saving room:', error);
+            message.error('Có lỗi xảy ra khi lưu phòng');
         } finally {
             setLoading(false);
         }
     };
 
-    const amenitiesMap = {
-        wifi: 'Wi-Fi',
-        ac: 'Điều hòa',
-        parking: 'Chỗ để xe',
-        security: 'Bảo vệ 24/7',
-        laundry: 'Máy giặt',
-        kitchen: 'Bếp riêng',
-        furniture: 'Nội thất đầy đủ'
-    };
-
-    const priceRangeMap = {
-        'under-2m': 'Dưới 2 triệu',
-        '2m-3m': '2 - 3 triệu',
-        '3m-4m': '3 - 4 triệu',
-        '4m-5m': '4 - 5 triệu',
-        'above-5m': 'Trên 5 triệu'
-    };
-
-    const areaRangeMap = {
-        'under-20': 'Dưới 20 m²',
-        '20-25': '20 - 25 m²',
-        '25-30': '25 - 30 m²',
-        '30-40': '30 - 40 m²',
-        'above-40': 'Trên 40 m²'
-    };
-
-    const distanceMap = {
-        'under-1': 'Dưới 1 km',
-        '1-2': '1 - 2 km',
-        '2-3': '2 - 3 km',
-        '3-5': '3 - 5 km',
-        'above-5': 'Trên 5 km'
-    };
-
-    const detailsTab = (
-        <div className="detail-tab-content">
-            <Form
-                form={form}
-                layout="vertical"
-                initialValues={room}
-                onFinish={handleSubmit}
-            >
-                <div className="form-row">
-                    <Form.Item
-                        label="Tên phòng"
-                        name="title"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên phòng' }]}
-                        className="form-item-half"
-                    >
-                        <Input
-                            placeholder="VD: Phòng A101"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Trạng thái"
-                        name="status"
-                        rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
-                        className="form-item-half"
-                    >
-                        <Select
-                            placeholder="Chọn trạng thái"
-                            disabled={mode === 'view'}
-                            size="large"
-                        >
-                            <Select.Option value={ROOM_STATUS.AVAILABLE}>{ROOM_STATUS_LABELS[ROOM_STATUS.AVAILABLE]}</Select.Option>
-                            <Select.Option value={ROOM_STATUS.RENTED}>{ROOM_STATUS_LABELS[ROOM_STATUS.RENTED]}</Select.Option>
-                        </Select>
-                    </Form.Item>
-                </div>
-
-                <Form.Item
-                    label="Mô tả"
-                    name="description"
-                >
-                    <Input.TextArea
-                        rows={3}
-                        placeholder="Mô tả chi tiết về phòng..."
-                        disabled={mode === 'view'}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Địa chỉ"
-                    name="address"
-                    rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
-                >
-                    <Input
-                        placeholder="VD: 123 Đường ABC, Quận 1"
-                        disabled={mode === 'view'}
-                        size="large"
-                    />
-                </Form.Item>
-
-                <div className="form-row">
-                    <Form.Item
-                        label="Vĩ độ (Latitude)"
-                        name="latitude"
-                        rules={[{ required: true, message: 'Vui lòng nhập vĩ độ' }]}
-                        className="form-item-half"
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            step={0.000001}
-                            placeholder="VD: 21.0285"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Kinh độ (Longitude)"
-                        name="longitude"
-                        rules={[{ required: true, message: 'Vui lòng nhập kinh độ' }]}
-                        className="form-item-half"
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            step={0.000001}
-                            placeholder="VD: 105.8542"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-                </div>
-
-                <div className="form-row">
-                    <Form.Item
-                        label="Giá thuê (VNĐ)"
-                        name="priceVnd"
-                        rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}
-                        className="form-item-half"
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            min={0}
-                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-                            placeholder="VD: 3000000"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Diện tích (m²)"
-                        name="areaSqm"
-                        rules={[{ required: true, message: 'Vui lòng nhập diện tích' }]}
-                        className="form-item-half"
-                    >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            min={0}
-                            step={0.1}
-                            placeholder="VD: 25"
-                            disabled={mode === 'view'}
-                            size="large"
-                        />
-                    </Form.Item>
-                </div>
-
-                <div className="form-row">
-                    <Form.Item
-                        label="Loại phòng"
-                        name="roomType"
-                        rules={[{ required: true, message: 'Vui lòng chọn loại phòng' }]}
-                        className="form-item-half"
-                    >
-                        <Select
-                            placeholder="Chọn loại phòng"
-                            disabled={mode === 'view'}
-                            size="large"
-                        >
-                            <Select.Option value={ROOM_TYPE.SINGLE}>{ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE]}</Select.Option>
-                            <Select.Option value={ROOM_TYPE.SHARED}>{ROOM_TYPE_LABELS[ROOM_TYPE.SHARED]}</Select.Option>
-                            <Select.Option value={ROOM_TYPE.STUDIO}>{ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO]}</Select.Option>
-                            <Select.Option value={ROOM_TYPE.APARTMENT}>{ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT]}</Select.Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Khu vực"
-                        name="areaTypeId"
-                        rules={[{ required: true, message: 'Vui lòng chọn khu vực' }]}
-                        className="form-item-half"
-                    >
-                        <Select
-                            placeholder="Chọn khu vực"
-                            disabled={mode === 'view'}
-                            size="large"
-                        >
-                            {areaTypes.map(area => (
-                                <Select.Option key={area.id} value={area.id}>{area.name}</Select.Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                </div>
-
-                {mode === 'edit' && (
-                    <Form.Item className="form-actions">
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            icon={<SaveOutlined />}
-                            size="large"
-                            loading={loading}
-                        >
-                            Lưu thay đổi
-                        </Button>
-                    </Form.Item>
-                )}
-            </Form>
-        </div>
-    );
-
-    const surveyTab = (
-        <div className="survey-tab-content">
-            <div className="survey-stats">
-                <Card className="stat-card">
-                    <div className="stat-number">{surveyData.length}</div>
-                    <div className="stat-label">Tổng khảo sát</div>
-                </Card>
-                <Card className="stat-card">
-                    <div className="stat-number">
-                        {(surveyData.reduce((sum, s) => sum + s.satisfaction, 0) / surveyData.length).toFixed(1)}
-                        <span className="stat-star">⭐</span>
+    // Mock map component (sẽ được BE xử lý sau)
+    const MapPreview = ({ latitude, longitude }) => {
+        return (
+            <div className="map-preview">
+                <div className="map-container">
+                    <div className="map-placeholder">
+                        <EnvironmentOutlined style={{ fontSize: 48, color: '#1890ff' }} />
+                        <p>Bản đồ hiển thị vị trí phòng</p>
+                        <p className="coordinates">
+                            Lat: {latitude?.toFixed(6)}, Lng: {longitude?.toFixed(6)}
+                        </p>
+                        <p className="map-note">
+                            <small>* Tích hợp Google Maps sẽ được cập nhật sau</small>
+                        </p>
                     </div>
-                    <div className="stat-label">Đánh giá trung bình</div>
-                </Card>
+                </div>
             </div>
+        );
+    };
 
-            <div className="survey-list">
-                {surveyData.map((survey) => (
-                    <Card key={survey.id} className="survey-card">
-                        <div className="survey-header">
-                            <div className="survey-user">
-                                <h3>{survey.studentName}</h3>
-                                <p className="survey-meta">
-                                    {survey.email} • {survey.phone}
+    // Tab 1: Room Information (similar to RoomDetailPage layout)
+    const roomInfoTab = isEditMode ? (
+        // Edit/Add Mode - Form with editable fields
+        <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            className="room-edit-form"
+        >
+            <Row gutter={[24, 24]} className="room-detail-content">
+                {/* Left Column - Room Info Form */}
+                <Col xs={24} lg={10}>
+                    <Card className="room-info-section">
+                        <h3 className="section-title">Thông tin cơ bản</h3>
+
+                        <Form.Item
+                            label="Tên phòng"
+                            name="title"
+                            rules={[{ required: true, message: 'Vui lòng nhập tên phòng' }]}
+                        >
+                            <Input placeholder="VD: Phòng trọ cao cấp gần ĐH Bách Khoa" size="large" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Mô tả"
+                            name="description"
+                        >
+                            <TextArea
+                                rows={4}
+                                placeholder="Mô tả chi tiết về phòng..."
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Địa chỉ"
+                            name="address"
+                            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
+                        >
+                            <Input placeholder="VD: 123 Đại Cồ Việt, Hai Bà Trưng, Hà Nội" size="large" />
+                        </Form.Item>
+
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Vĩ độ (Latitude)"
+                                    name="latitude"
+                                    rules={[{ required: true, message: 'Vui lòng nhập vĩ độ' }]}
+                                >
+                                    <InputNumber
+                                        style={{ width: '100%' }}
+                                        step={0.000001}
+                                        placeholder="21.0285"
+                                        size="large"
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Kinh độ (Longitude)"
+                                    name="longitude"
+                                    rules={[{ required: true, message: 'Vui lòng nhập kinh độ' }]}
+                                >
+                                    <InputNumber
+                                        style={{ width: '100%' }}
+                                        step={0.000001}
+                                        placeholder="105.8542"
+                                        size="large"
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Giá thuê (VNĐ)"
+                                    name="priceVnd"
+                                    rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}
+                                >
+                                    <InputNumber
+                                        style={{ width: '100%' }}
+                                        min={0}
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                                        placeholder="3000000"
+                                        size="large"
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Diện tích (m²)"
+                                    name="areaSqm"
+                                    rules={[{ required: true, message: 'Vui lòng nhập diện tích' }]}
+                                >
+                                    <InputNumber
+                                        style={{ width: '100%' }}
+                                        min={0}
+                                        step={0.1}
+                                        placeholder="25"
+                                        size="large"
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Loại phòng"
+                                    name="roomType"
+                                    rules={[{ required: true, message: 'Vui lòng chọn loại phòng' }]}
+                                >
+                                    <Select placeholder="Chọn loại phòng" size="large">
+                                        <Option value={ROOM_TYPE.SINGLE}>{ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE]}</Option>
+                                        <Option value={ROOM_TYPE.SHARED}>{ROOM_TYPE_LABELS[ROOM_TYPE.SHARED]}</Option>
+                                        <Option value={ROOM_TYPE.STUDIO}>{ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO]}</Option>
+                                        <Option value={ROOM_TYPE.APARTMENT}>{ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT]}</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Trạng thái"
+                                    name="status"
+                                    rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+                                >
+                                    <Select placeholder="Chọn trạng thái" size="large">
+                                        <Option value={ROOM_STATUS.AVAILABLE}>{ROOM_STATUS_LABELS[ROOM_STATUS.AVAILABLE]}</Option>
+                                        <Option value={ROOM_STATUS.RENTED}>{ROOM_STATUS_LABELS[ROOM_STATUS.RENTED]}</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Form.Item
+                            label="Khu vực"
+                            name="areaTypeId"
+                            rules={[{ required: true, message: 'Vui lòng chọn khu vực' }]}
+                        >
+                            <Select placeholder="Chọn khu vực" size="large">
+                                {areaTypes.map(area => (
+                                    <Option key={area.id} value={area.id}>{area.name}</Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                icon={<SaveOutlined />}
+                                size="large"
+                                loading={loading}
+                                block
+                            >
+                                {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
+                            </Button>
+                        </Form.Item>
+                    </Card>
+                </Col>
+
+                {/* Right Column - Map */}
+                <Col xs={24} lg={14}>
+                    <div className="map-section">
+                        <Card title="Vị trí trên bản đồ" className="map-card">
+                            <MapPreview
+                                latitude={form.getFieldValue('latitude') || roomDetail?.latitude}
+                                longitude={form.getFieldValue('longitude') || roomDetail?.longitude}
+                            />
+                            <div style={{ marginTop: 16, padding: 12, background: '#f0f5ff', borderRadius: 8 }}>
+                                <p style={{ margin: 0, fontSize: 14, color: '#1890ff' }}>
+                                    💡 <strong>Lưu ý:</strong> Chọn vị trí chính xác trên bản đồ để sinh viên dễ dàng tìm kiếm phòng của bạn.
+                                    Tính năng chọn điểm trên bản đồ sẽ được cập nhật sau.
                                 </p>
-                                <p className="survey-school">{survey.school}</p>
                             </div>
-                            <div className="survey-time">{survey.submittedAt}</div>
-                        </div>
-
-                        <Divider />
-
-                        <div className="survey-details">
-                            <div className="survey-section">
-                                <h4 className="section-title">Nhu cầu tìm phòng</h4>
-                                <div className="survey-row">
-                                    <div className="survey-field">
-                                        <label>Khoảng giá:</label>
-                                        <span>{priceRangeMap[survey.priceRange]}</span>
-                                    </div>
-                                    <div className="survey-field">
-                                        <label>Diện tích:</label>
-                                        <span>{areaRangeMap[survey.areaRange]}</span>
-                                    </div>
-                                    <div className="survey-field">
-                                        <label>Khoảng cách:</label>
-                                        <span>{distanceMap[survey.maxDistance]}</span>
-                                    </div>
-                                </div>
+                        </Card>
+                    </div>
+                </Col>
+            </Row>
+        </Form>
+    ) : (
+        // View Mode - Display only
+        <Row gutter={[24, 24]} className="room-detail-content">
+            {/* Left Column - Room Info */}
+            <Col xs={24} lg={10}>
+                <div className="room-info-section">
+                    {/* Image Gallery */}
+                    <div className="room-images">
+                        <Image.PreviewGroup>
+                            <div className="main-image">
+                                <Image
+                                    src={roomDetail?.roomCoverImageUrl || 'https://via.placeholder.com/600x400'}
+                                    alt={roomDetail?.title}
+                                    className="primary-image"
+                                />
                             </div>
-
-                            <div className="survey-section">
-                                <h4 className="section-title">Tiện ích mong muốn</h4>
-                                <div className="amenities-tags">
-                                    {survey.amenities.map(amenity => (
-                                        <Tag key={amenity} color="green">
-                                            {amenitiesMap[amenity]}
-                                        </Tag>
+                            {roomDetail?.roomNotCoverImageUrls && roomDetail.roomNotCoverImageUrls.length > 0 && (
+                                <div className="thumbnail-images">
+                                    {roomDetail.roomNotCoverImageUrls.slice(0, 3).map((img, index) => (
+                                        <Image
+                                            key={index}
+                                            src={img}
+                                            alt={`${roomDetail.title} - ${index + 2}`}
+                                            className="thumbnail-image"
+                                        />
                                     ))}
                                 </div>
-                            </div>
+                            )}
+                        </Image.PreviewGroup>
+                    </div>
 
-                            <div className="survey-section">
-                                <h4 className="section-title">Đánh giá hệ thống</h4>
-                                <div className="rating-display">
-                                    <Rate disabled value={survey.satisfaction} />
-                                    <span className="rating-text">
-                                        ({survey.satisfaction}/5)
-                                    </span>
-                                </div>
-                            </div>
+                    {/* Title & Rating */}
+                    <div className="room-header">
+                        <h1 className="room-title">{roomDetail?.title}</h1>
+                        <div className="room-rating">
+                            <Rate disabled defaultValue={roomDetail?.avgAmenity || 0} allowHalf />
+                            <span className="rating-text">
+                                {roomDetail?.avgAmenity?.toFixed(1) || 0} (Tiện nghi)
+                            </span>
+                        </div>
+                    </div>
 
-                            {survey.feedback && (
-                                <div className="survey-section">
-                                    <h4 className="section-title">Góp ý</h4>
-                                    <p className="feedback-text">{survey.feedback}</p>
-                                </div>
+                    {/* Price & Area */}
+                    <div className="room-quick-info">
+                        <div className="info-item price-item">
+                            <DollarOutlined className="info-icon" />
+                            <div>
+                                <span className="price-amount">{roomDetail?.priceVnd?.toLocaleString()}đ</span>
+                                <span className="price-period">/tháng</span>
+                            </div>
+                        </div>
+                        <div className="info-item">
+                            <ExpandOutlined className="info-icon" />
+                            <span className="info-text">{roomDetail?.areaSqm}m²</span>
+                        </div>
+                        <div className="info-item">
+                            <HomeOutlined className="info-icon" />
+                            <span className="info-text">{ROOM_TYPE_LABELS[roomDetail?.roomType] || roomDetail?.roomType}</span>
+                        </div>
+                    </div>
+
+                    <Divider />
+
+                    {/* Address */}
+                    <div className="room-section">
+                        <h3 className="section-title">Địa chỉ</h3>
+                        <div className="address-info">
+                            <EnvironmentOutlined className="location-icon" />
+                            <span>{roomDetail?.address}</span>
+                        </div>
+                    </div>
+
+                    <Divider />
+
+                    {/* Description */}
+                    <div className="room-section">
+                        <h3 className="section-title">Mô tả</h3>
+                        <p className="room-description">{roomDetail?.description || 'Chưa có mô tả'}</p>
+                    </div>
+
+                    <Divider />
+
+                    {/* Amenities */}
+                    <div className="room-section">
+                        <h3 className="section-title">Tiện nghi</h3>
+                        <div className="amenities-list">
+                            {roomDetail?.amenities?.map((amenity, index) => (
+                                <Tag key={index} className="amenity-tag-large" color="green">
+                                    {amenity}
+                                </Tag>
+                            )) || <span className="text-muted">Chưa có thông tin tiện nghi</span>}
+                        </div>
+                    </div>
+
+                    <Divider />
+
+                    {/* Other Info */}
+                    <div className="room-section">
+                        <h3 className="section-title">Thông tin khác</h3>
+                        <div className="info-grid">
+                            <div className="info-row">
+                                <span className="info-label">Loại khu vực:</span>
+                                <span className="info-value">{roomDetail?.areaTypeName || 'N/A'}</span>
+                            </div>
+                            <div className="info-row">
+                                <span className="info-label">Điểm an ninh:</span>
+                                <span className="info-value">
+                                    <Rate disabled defaultValue={roomDetail?.avgSecurity || 0} allowHalf />
+                                    {roomDetail?.avgSecurity?.toFixed(1) || 0}
+                                </span>
+                            </div>
+                            <div className="info-row">
+                                <span className="info-label">Trạng thái:</span>
+                                <Tag color={roomDetail?.status === 'AVAILABLE' ? 'green' : 'red'}>
+                                    {ROOM_STATUS_LABELS[roomDetail?.status] || roomDetail?.status}
+                                </Tag>
+                            </div>
+                            {roomDetail?.landlord && (
+                                <>
+                                    <div className="info-row">
+                                        <span className="info-label">Chủ nhà:</span>
+                                        <span className="info-value">{roomDetail.landlord.fullName}</span>
+                                    </div>
+                                    <div className="info-row">
+                                        <span className="info-label">Số điện thoại:</span>
+                                        <span className="info-value">{roomDetail.landlord.phoneNumber}</span>
+                                    </div>
+                                </>
                             )}
                         </div>
+                    </div>
+                </div>
+            </Col>
+
+            {/* Right Column - Map */}
+            <Col xs={24} lg={14}>
+                <div className="map-section">
+                    <Card title="Vị trí trên bản đồ" className="map-card">
+                        <MapPreview
+                            latitude={roomDetail?.latitude}
+                            longitude={roomDetail?.longitude}
+                        />
                     </Card>
-                ))}
-            </div>
+                </div>
+            </Col>
+        </Row>
+    );
+
+    // Tab 2: Survey Answers & Average Score
+    const surveyTab = (
+        <div className="survey-tab-content">
+            {/* Summary Stats */}
+            <Row gutter={[16, 16]} className="survey-summary">
+                <Col xs={24} sm={12}>
+                    <Card className="stat-card">
+                        <div className="stat-content">
+                            <div className="stat-number">{surveyAnswers.length}</div>
+                            <div className="stat-label">Tổng câu hỏi khảo sát</div>
+                        </div>
+                    </Card>
+                </Col>
+                <Col xs={24} sm={12}>
+                    <Card className="stat-card">
+                        <div className="stat-content">
+                            <div className="stat-number">
+                                {calculateAverageScore()}
+                                <Rate
+                                    disabled
+                                    defaultValue={parseFloat(calculateAverageScore())}
+                                    allowHalf
+                                    style={{ fontSize: 20, marginLeft: 8 }}
+                                />
+                            </div>
+                            <div className="stat-label">Điểm trung bình</div>
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Divider />
+
+            {/* Survey Questions & Answers */}
+            <Card title="Chi tiết kết quả khảo sát" className="survey-details-card">
+                <List
+                    dataSource={surveyQuestions}
+                    renderItem={(question) => {
+                        const answer = surveyAnswers.find(a => a.surveyQuestionId === question.id);
+                        return (
+                            <List.Item className="survey-item">
+                                <div className="survey-question-wrapper">
+                                    <div className="survey-question">
+                                        <span className="question-number">#{question.questionOrder}</span>
+                                        <span className="question-text">{question.questionText}</span>
+                                    </div>
+                                    <div className="survey-answer">
+                                        <Rate
+                                            disabled
+                                            defaultValue={answer?.avgPoint || 0}
+                                            allowHalf
+                                        />
+                                        <span className="answer-score">
+                                            {answer?.avgPoint?.toFixed(1) || 0}/5.0
+                                        </span>
+                                        <span className="answer-count">
+                                            ({answer?.totalAnswers || 0} đánh giá)
+                                        </span>
+                                    </div>
+                                </div>
+                            </List.Item>
+                        );
+                    }}
+                />
+            </Card>
         </div>
     );
 
-    const tabItems = [
+    const tabItems = isEditMode ? [
         {
-            key: 'details',
-            label: 'Chi tiết phòng',
-            children: detailsTab
+            key: 'info',
+            label: 'Thông tin chi tiết',
+            children: roomInfoTab
+        }
+    ] : [
+        {
+            key: 'info',
+            label: 'Thông tin chi tiết',
+            children: roomInfoTab
         },
         {
             key: 'survey',
-            label: 'Form khảo sát',
+            label: 'Kết quả khảo sát',
             children: surveyTab
         }
     ];
+
+    const getHeaderTitle = () => {
+        if (isAddMode) return 'Thêm phòng mới';
+        if (isEditMode) return `Chỉnh sửa: ${roomDetail?.title || ''}`;
+        return roomDetail?.title || room?.title || room?.name || 'Chi tiết phòng';
+    };
 
     return (
         <div className="room-detail-management">
@@ -525,10 +655,12 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                     Quay lại
                 </Button>
                 <div className="detail-title">
-                    <h1>{roomDetail?.title || room?.title || room?.name}</h1>
-                    <Tag color={room.status === ROOM_STATUS.AVAILABLE ? 'green' : 'red'}>
-                        {ROOM_STATUS_LABELS[room.status] || (room.status === 'available' ? 'Còn trống' : 'Đã thuê')}
-                    </Tag>
+                    <h1>{getHeaderTitle()}</h1>
+                    {!isAddMode && (
+                        <Tag color={room?.status === ROOM_STATUS.AVAILABLE || room?.status === 'AVAILABLE' ? 'green' : 'red'}>
+                            {ROOM_STATUS_LABELS[room?.status] || (room?.status === 'available' ? 'Còn trống' : 'Đã thuê')}
+                        </Tag>
+                    )}
                 </div>
             </div>
 

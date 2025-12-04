@@ -194,8 +194,29 @@ const RoomManagementPage = () => {
     };
 
     const handleAdd = () => {
-        form.resetFields();
-        setModalVisible(true);
+        // Tạo phòng mới rỗng với các giá trị mặc định
+        const newRoom = {
+            id: null, // null để đánh dấu là phòng mới
+            landlordUserId: 1,
+            areaTypeId: 1,
+            areaTypeName: '',
+            title: '',
+            description: '',
+            address: '',
+            latitude: 21.0285,
+            longitude: 105.8542,
+            priceVnd: 0,
+            areaSqm: 0,
+            roomType: 'SINGLE',
+            status: 'AVAILABLE',
+            avgAmenity: 0,
+            avgSecurity: 0,
+            roomCoverImageUrl: null,
+            roomNotCoverImageUrls: [],
+            amenities: []
+        };
+        setSelectedRoom(newRoom);
+        setDetailMode('add');
     };
 
     const handleView = (record) => {
@@ -213,12 +234,66 @@ const RoomManagementPage = () => {
         setDetailMode(null);
     };
 
-    const handleSaveDetail = (updatedRoom) => {
-        // TODO: Replace with actual API call
-        // await updateRoomApi(updatedRoom.id, updatedRoom);
-        message.success('Cập nhật phòng thành công');
-        setRooms(rooms.map(r => r.id === updatedRoom.id ? updatedRoom : r));
-        handleBackToList();
+    const handleSaveDetail = async (updatedRoom) => {
+        try {
+            if (detailMode === 'add') {
+                // Tạo phòng mới
+                const roomData = {
+                    landlordUserId: 1,
+                    title: updatedRoom.title,
+                    description: updatedRoom.description || '',
+                    address: updatedRoom.address,
+                    latitude: updatedRoom.latitude || 21.0285,
+                    longitude: updatedRoom.longitude || 105.8542,
+                    priceVnd: updatedRoom.priceVnd,
+                    areaSqm: updatedRoom.areaSqm,
+                    roomType: updatedRoom.roomType || 'SINGLE',
+                    status: updatedRoom.status,
+                    areaTypeId: updatedRoom.areaTypeId || 1,
+                    surveyAnswers: [],
+                    roomCoverImageId: null,
+                    roomNotCoverImageIds: []
+                };
+
+                // MOCK API - Success case
+                const response = {
+                    code: '00',
+                    message: null,
+                    data: { id: Math.floor(Math.random() * 10000), ...roomData }
+                };
+
+                await new Promise(resolve => setTimeout(resolve, 600));
+
+                if (response.code === '00') {
+                    message.success('Thêm phòng thành công');
+                    fetchRooms(pagination.current);
+                    handleBackToList();
+                } else {
+                    message.error(response.message || 'Có lỗi xảy ra');
+                }
+            } else {
+                // Cập nhật phòng
+                // MOCK API - Success case
+                const response = {
+                    code: '00',
+                    message: null,
+                    data: updatedRoom
+                };
+
+                await new Promise(resolve => setTimeout(resolve, 600));
+
+                if (response.code === '00') {
+                    message.success('Cập nhật phòng thành công');
+                    setRooms(rooms.map(r => r.id === updatedRoom.id ? updatedRoom : r));
+                    handleBackToList();
+                } else {
+                    message.error(response.message || 'Cập nhật phòng thất bại');
+                }
+            }
+        } catch (error) {
+            console.error('Error saving room:', error);
+            message.error('Có lỗi xảy ra khi lưu phòng');
+        }
     };
 
     const handleDelete = (record) => {
