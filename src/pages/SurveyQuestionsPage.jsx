@@ -1,12 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Tabs, Table, Button, Modal, Form, Input, message, Popconfirm, Space, Tag, Card } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MenuOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { HolderOutlined } from '@ant-design/icons';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
     getAllSurveysApi,
     getAllSurveyQuestionsApi,
     createSurveyQuestionApi,
     updateSurveyQuestionApi,
-    deleteSurveyQuestionsApi
+    deleteSurveyQuestionsApi,
+    reorderSurveyQuestionsApi
 } from '../util/api';
 import './SurveyQuestionsPage.css';
 
@@ -18,6 +36,14 @@ const SurveyQuestionsPage = () => {
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState(null);
+
+    // Drag and Drop sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     useEffect(() => {
         fetchSurveys();
@@ -222,72 +248,112 @@ const SurveyQuestionsPage = () => {
         } finally {
             setLoading(false);
         }
-    };    // Move question up
-    const handleMoveUp = async (record, index) => {
-        if (index === 0) return;
+    };    // Handle drag end event
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
 
-        const prevQuestion = questions[index - 1];
-        const currentOrder = record.questionOrder;
-        const prevOrder = prevQuestion.questionOrder;
+        if (!over || active.id === over.id) {
+            return;
+        }
+
+        const oldIndex = questions.findIndex((q) => q.id === active.id);
+        const newIndex = questions.findIndex((q) => q.id === over.id);
+
+        // Optimistic update - cập nhật UI ngay
+        const newQuestions = arrayMove(questions, oldIndex, newIndex);
+
+        // Cập nhật questionOrder cho tất cả câu hỏi
+        const updatedQuestions = newQuestions.map((q, index) => ({
+            ...q,
+            questionOrder: index + 1
+        }));
+
+        setQuestions(updatedQuestions);
 
         try {
-            // MOCK API - Update question orders
-            // Swap orders
-            const response1 = {
+            // Chuẩn bị data để gọi API
+            const orders = updatedQuestions.map(q => ({
+                id: q.id,
+                questionOrder: q.questionOrder
+            }));
+
+            // MOCK API - Gọi API reorder
+            // Khi backend sẵn sàng, uncomment dòng dưới và comment phần mock
+            // const response = await reorderSurveyQuestionsApi({ surveyId: activeTab, orders });
+
+            const response = {
                 code: '00',
                 message: null,
-                data: { success: true }
+                data: {
+                    success: true,
+                    updatedCount: orders.length
+                }
             };
 
-            const response2 = {
-                code: '00',
-                message: null,
-                data: { success: true }
-            };
+            // Simulate API delay (chỉ cho mock)
+            await new Promise(resolve => setTimeout(resolve, 400));
 
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            message.success('Đã di chuyển câu hỏi');
-            fetchQuestions(activeTab);
+            if (response.code === '00') {
+                message.success('Đã cập nhật thứ tự câu hỏi');
+            } else {
+                // Rollback nếu API fail
+                message.error(response.message || 'Không thể cập nhật thứ tự');
+                fetchQuestions(activeTab);
+            }
         } catch (error) {
-            console.error('Error moving question:', error);
-            message.error('Có lỗi xảy ra khi di chuyển câu hỏi');
+            console.error('Error reordering questions:', error);
+            message.error('Có lỗi xảy ra khi cập nhật thứ tự');
+            // Rollback
+            fetchQuestions(activeTab);
         }
     };
 
-    // Move question down
-    const handleMoveDown = async (record, index) => {
-        if (index === questions.length - 1) return;
+    // Sortable Row Component với drag handle
+    const SortableRow = ({ id, ...props }) => {
+        const {
+            attributes,
+            listeners,
+            setNodeRef,
+            transform,
+            transition,
+            isDragging,
+        } = useSortable({ id });
 
-        const nextQuestion = questions[index + 1];
-        const currentOrder = record.questionOrder;
-        const nextOrder = nextQuestion.questionOrder;
+        const style = {
+            ...props.style,
+            transform: CSS.Transform.toString(transform),
+            transition,
+            opacity: isDragging ? 0.5 : 1,
+        };
 
-        try {
-            // MOCK API - Update question orders
-            // Swap orders
-            const response1 = {
-                code: '00',
-                message: null,
-                data: { success: true }
-            };
-
-            const response2 = {
-                code: '00',
-                message: null,
-                data: { success: true }
-            };
-
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            message.success('Đã di chuyển câu hỏi');
-            fetchQuestions(activeTab);
-        } catch (error) {
-            console.error('Error moving question:', error);
-            message.error('Có lỗi xảy ra khi di chuyển câu hỏi');
-        }
+        return (
+            <tr
+                ref={setNodeRef}
+                style={style}
+                {...props}
+                data-row-key={id}
+            >
+                {/* Inject drag handle as first cell */}
+                <td className="drag-handle-cell" style={{ width: 60, textAlign: 'center', padding: '8px' }}>
+                    <div
+                        {...attributes}
+                        {...listeners}
+                        className="drag-handle"
+                        style={{
+                            cursor: 'grab',
+                            fontSize: '18px',
+                            color: '#999',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <HolderOutlined />
+                    </div>
+                </td>
+                {props.children}
+            </tr>
+        );
     };
 
     const columns = [
@@ -306,23 +372,9 @@ const SurveyQuestionsPage = () => {
         {
             title: 'Thao tác',
             key: 'action',
-            width: 250,
+            width: 180,
             render: (_, record, index) => (
                 <Space>
-                    <Button
-                        type="text"
-                        icon={<MenuOutlined style={{ transform: 'rotate(90deg)' }} />}
-                        onClick={() => handleMoveUp(record, index)}
-                        disabled={index === 0}
-                        title="Di chuyển lên"
-                    />
-                    <Button
-                        type="text"
-                        icon={<MenuOutlined style={{ transform: 'rotate(90deg)' }} />}
-                        onClick={() => handleMoveDown(record, index)}
-                        disabled={index === questions.length - 1}
-                        title="Di chuyển xuống"
-                    />
                     <Button
                         type="primary"
                         ghost
@@ -352,7 +404,7 @@ const SurveyQuestionsPage = () => {
         key: survey.id.toString(),
         label: (
             <span>
-                {survey.type === 'AMENITY' ? '🏠' : '🔒'} {survey.title || survey.type}
+                {survey.type === 'AMENITY' ? '' : ''} {survey.title || survey.type}
             </span>
         ),
         children: (
@@ -375,16 +427,69 @@ const SurveyQuestionsPage = () => {
                     </Button>
                 </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={questions}
-                    rowKey="id"
-                    loading={loading}
-                    pagination={false}
-                    locale={{
-                        emptyText: 'Chưa có câu hỏi nào. Nhấn "Thêm câu hỏi" để bắt đầu.'
-                    }}
-                />
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={questions.map(q => q.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+                                    <th style={{ width: 60, padding: '12px 8px', textAlign: 'center' }}></th>
+                                    <th style={{ width: 80, padding: '12px 16px', fontWeight: 600, color: '#262626' }}>STT</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600, color: '#262626' }}>Câu hỏi</th>
+                                    <th style={{ width: 180, padding: '12px 16px', fontWeight: 600, color: '#262626' }}>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {questions.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} style={{ textAlign: 'center', padding: '60px 0', color: '#8c8c8c' }}>
+                                            Chưa có câu hỏi nào. Nhấn "Thêm câu hỏi" để bắt đầu.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    questions.map((question) => (
+                                        <SortableRow key={question.id} id={question.id}>
+                                            <td style={{ padding: '12px 16px' }}>
+                                                <Tag color="blue">{question.questionOrder}</Tag>
+                                            </td>
+                                            <td style={{ padding: '12px 16px' }}>{question.questionText}</td>
+                                            <td style={{ padding: '12px 16px' }}>
+                                                <Space>
+                                                    <Button
+                                                        type="primary"
+                                                        ghost
+                                                        icon={<EditOutlined />}
+                                                        onClick={() => handleEdit(question)}
+                                                    >
+                                                        Sửa
+                                                    </Button>
+                                                    <Popconfirm
+                                                        title="Xóa câu hỏi"
+                                                        description="Bạn có chắc muốn xóa câu hỏi này?"
+                                                        onConfirm={() => handleDelete([question.id])}
+                                                        okText="Xóa"
+                                                        cancelText="Hủy"
+                                                        okButtonProps={{ danger: true }}
+                                                    >
+                                                        <Button type="primary" danger icon={<DeleteOutlined />}>
+                                                            Xóa
+                                                        </Button>
+                                                    </Popconfirm>
+                                                </Space>
+                                            </td>
+                                        </SortableRow>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </SortableContext>
+                </DndContext>
             </div>
         ),
     }));

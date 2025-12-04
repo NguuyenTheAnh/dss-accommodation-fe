@@ -128,6 +128,15 @@ const deleteSurveyQuestionsApi = (ids) => {
     return axios.post(URL_API, { ids });
 }
 
+/**
+ * Reorder survey questions (for drag & drop)
+ * @param {object} data - { surveyId, orders: [{id, questionOrder}] }
+ */
+const reorderSurveyQuestionsApi = (data) => {
+    const URL_API = "/survey-question/reorder";
+    return axios.post(URL_API, data);
+}
+
 // ==========================================
 // FILE APIs
 // ==========================================
@@ -218,6 +227,7 @@ export {
     createSurveyQuestionApi,
     updateSurveyQuestionApi,
     deleteSurveyQuestionsApi,
+    reorderSurveyQuestionsApi,
 
     // File
     uploadFilesApi,

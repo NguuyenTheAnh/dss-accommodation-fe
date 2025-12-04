@@ -62,18 +62,101 @@
 }
 
 /* Table Styling */
-.ant-table {
+.ant-table,
+table {
     background: white;
+    width: 100%;
 }
 
-.ant-table-thead>tr>th {
+table {
+    border-collapse: collapse;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ant-table-thead>tr>th,
+table thead th {
     background: #fafafa;
     font-weight: 600;
     color: #262626;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.ant-table-tbody>tr:hover {
+.ant-table-tbody>tr,
+table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ant-table-tbody>tr:hover,
+table tbody tr:hover {
     background: #f5f5f5;
+}
+
+table tbody tr:last-child {
+    border-bottom: none;
+}
+
+table tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+}
+
+/* Drag Handle */
+.drag-handle-cell {
+    width: 40px;
+    text-align: center;
+    padding: 12px 8px !important;
+}
+
+.drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab !important;
+    color: #999;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+    color: #1890ff !important;
+    background: #f0f5ff;
+    transform: scale(1.1);
+}
+
+.drag-handle:active {
+    cursor: grabbing !important;
+    color: #0a5fcc !important;
+}
+
+/* Dragging State */
+tr[style*="opacity: 0.5"] {
+    background: #e6f7ff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px dashed #1890ff;
+}
+
+/* Row Drag Indicator */
+table tbody tr {
+    position: relative;
+}
+
+table tbody tr:hover .drag-handle-cell {
+    border-left: 3px solid #52c41a;
+}
+
+/* Empty State */
+.empty-state-row td {
+    text-align: center;
+    color: #999;
+    padding: 40px 16px !important;
+    font-size: 14px;
 }
 
 /* Modal Styling */

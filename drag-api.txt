@@ -1,0 +1,149 @@
+# API CẬP NHẬT THỨ TỰ CÂU HỎI KHẢO SÁT (DRAG & DROP)
+
+## 1. Mục đích
+Khi FE kéo-thả (drag & drop) để sắp xếp lại thứ tự câu hỏi trong survey, FE sẽ gọi API này để cập nhật `questionOrder` của tất cả câu hỏi trong 1 survey.
+
+## 2. Endpoint
+
+**POST** `/survey-question/reorder`
+
+## 3. Request Body
+
+```json
+{
+  "surveyId": 1,
+  "orders": [
+    { "id": 3, "questionOrder": 1 },
+    { "id": 1, "questionOrder": 2 },
+    { "id": 2, "questionOrder": 3 },
+    { "id": 4, "questionOrder": 4 }
+  ]
+}
+```
+
+### Giải thích:
+- **surveyId**: ID của survey chứa các câu hỏi cần reorder
+- **orders**: Mảng chứa thông tin thứ tự mới của từng câu hỏi
+  - **id**: ID của câu hỏi
+  - **questionOrder**: Thứ tự mới (1, 2, 3, 4,...)
+
+### Validation:
+- `surveyId` bắt buộc, phải tồn tại
+- `orders` phải là array, không rỗng
+- Mỗi phần tử trong `orders` phải có `id` và `questionOrder`
+- Các `id` trong `orders` phải thuộc về survey được chỉ định
+- `questionOrder` phải là số nguyên dương, liên tục từ 1
+
+## 4. Response
+
+### Success (code: "00")
+
+```json
+{
+  "code": "00",
+  "message": null,
+  "data": {
+    "success": true,
+    "updatedCount": 4
+  }
+}
+```
+
+### Error Cases
+
+**Trường hợp 1: Survey không tồn tại**
+```json
+{
+  "code": "SURVEY_NOT_FOUND",
+  "message": "Survey với ID=999 không tồn tại",
+  "data": null
+}
+```
+
+**Trường hợp 2: Câu hỏi không thuộc survey**
+```json
+{
+  "code": "QUESTION_NOT_IN_SURVEY",
+  "message": "Câu hỏi ID=5 không thuộc survey ID=1",
+  "data": null
+}
+```
+
+**Trường hợp 3: Dữ liệu không hợp lệ**
+```json
+{
+  "code": "INVALID_ORDER_DATA",
+  "message": "questionOrder phải liên tục từ 1",
+  "data": null
+}
+```
+
+## 5. Logic Backend cần xử lý
+
+1. **Validate surveyId**: Kiểm tra survey có tồn tại không
+2. **Validate orders**: 
+   - Kiểm tra tất cả id trong orders có thuộc survey không
+   - Kiểm tra questionOrder phải liên tục (1, 2, 3,... không bỏ số)
+3. **Update database**:
+   - Cập nhật `questionOrder` cho từng câu hỏi theo mảng orders
+   - Có thể dùng batch update hoặc transaction để đảm bảo data consistency
+4. **Return success**: Trả về số lượng câu hỏi đã update
+
+## 6. Ví dụ SQL Update (tham khảo)
+
+```sql
+-- Cách 1: Update từng câu
+UPDATE survey_question 
+SET question_order = ? 
+WHERE id = ? AND survey_id = ?;
+
+-- Cách 2: Dùng CASE WHEN (nhanh hơn nếu nhiều câu)
+UPDATE survey_question
+SET question_order = CASE
+  WHEN id = 3 THEN 1
+  WHEN id = 1 THEN 2
+  WHEN id = 2 THEN 3
+  WHEN id = 4 THEN 4
+END
+WHERE survey_id = 1 AND id IN (1, 2, 3, 4);
+```
+
+## 7. Lưu ý cho Frontend
+
+- FE chỉ gọi API này SAU KHI user đã kéo-thả xong (onDragEnd)
+- Trước khi gọi API, FE nên update state local ngay để UX mượt
+- Nếu API fail, FE rollback lại state cũ
+- FE nên debounce nếu user kéo-thả liên tục nhiều lần
+
+## 8. Testing
+
+### Test Case 1: Reorder thành công
+**Input:**
+```json
+{
+  "surveyId": 1,
+  "orders": [
+    { "id": 2, "questionOrder": 1 },
+    { "id": 1, "questionOrder": 2 }
+  ]
+}
+```
+**Expected:** code="00", updatedCount=2
+
+### Test Case 2: Survey không tồn tại
+**Input:** surveyId=999
+**Expected:** code="SURVEY_NOT_FOUND"
+
+### Test Case 3: Question không thuộc survey
+**Input:** surveyId=1, nhưng id=999 (không thuộc survey 1)
+**Expected:** code="QUESTION_NOT_IN_SURVEY"
+
+### Test Case 4: Order không liên tục
+**Input:** questionOrder=[1, 3, 5] (bỏ 2, 4)
+**Expected:** code="INVALID_ORDER_DATA"
+
+---
+
+**Tóm tắt:**
+API này giúp BE cập nhật hàng loạt `questionOrder` sau khi FE drag-drop. 
+BE phải validate kỹ và dùng transaction để đảm bảo data consistency.
