@@ -1,0 +1,259 @@
+API	Mô tả	Phân công	Method	Path	Req body	response	response error
+Đăng nhập	Đăng nhập	Nam	"POST hết 
+cho tiện nhé"	{{beURL}} /auth/login	"{
+  ""username"": ""test1"",
+  ""password"":123456
+}"	"{
+    ""code"": ""00"",
+    ""message"": null,
+    ""data"": ""successful""
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+Attach file	Upload file 	Nam		"{{beURL}} /file/upload
+
+chú ý: form data"	"upload nhiều files:
+{
+  ""files"":
+}"	"{
+    ""code"": ""00"",
+    ""message"": null,
+    ""data"": ""successful""
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+Area type	Lấy ra hết loại khu vực	Phương		{{beURL}} /area-type/all	{}	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": [
+    {
+      ""id"": 1,
+      ""name"":""abc""
+    }
+  ]
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+Survey	Lấy ra hết trong bảng survey	Phương		{{beURL}} /survey/all	{}	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": [
+    {
+      ""id"": 1,
+      ""type"": ""AMENITY"",
+      ""title"": ""abc"",
+      ""description"": ""abc""
+    }
+  ]
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+Survey question	Thêm	Phương		"{{beURL}} /survey-question/create
+
+chỗ này lưu ý: khi save thì lấy 
+questionOrder = questionOrder max hiện tại + 1"	"{
+    ""surveyId"":1,
+    ""questionText"": ""abc""
+}
+"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": {
+    ""id"": 1,
+    ""surveyId"": 1,
+    ""questionText"": ""abc"",
+    ""questionOrder"": 1
+  }
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	Sửa	Phương		"{{beURL}} /survey-question/update
+
+chỗ này lưu ý: khi save thì lấy 
+nếu questionOrder đã tồn tại thì cập nhất các order sau nó +1
+chưa tồn tại thì báo lỗi"	"{
+  ""id"": 1,
+  ""surveyId"": 1,
+  ""questionText"": ""abc"",
+  ""questionOrder"": 2
+}"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": {
+    ""id"": 1,
+    ""surveyId"": 1,
+    ""questionText"": ""abc"",
+    ""questionOrder"": 1
+  }
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	Xóa	Phương		{{beURL}} /survey-question/delete	"{
+  ""ids"": [1,2]
+}"	"{
+    ""code"": ""00"",
+    ""message"": null,
+    ""data"": ""successful""
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	Xem danh sách 	Phương		"{{beURL}} /survey-question/all
+
+chỗ này lưu ý: list trong data cần được sắp xếp
+theo thứ tự tăng dần của questionOrder"	"{
+  ""surveyId"":1
+}"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": [
+    {
+      ""id"": 1,
+      ""surveyId"": 1,
+      ""questionText"": ""abc"",
+      ""questionOrder"": 1
+    }
+  ]
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+Quản lý phòng	Thêm mới phòng	Nam		"{{beURL}} /room/create
+
+chú ý:
+- lưu room
+- lưu survey answer
+- lưu room_image"	"{
+  ""surveyAnswers"":[
+    {
+      ""surveyQuestionId"":1,
+      ""point"":2
+    }
+  ],
+  ""roomNotCoverImageIds"":[1,2],
+  ""roomCoverImageId"":3,
+  ""landlordUserId"":1,
+  ""title"": ""abc"",
+  ""description"":""abc"",
+  ""address"": ""abc"",
+  ""latitude"":10.000001,
+  ""longitude"":10.000001,
+  ""priceVnd"":10000,
+  ""areaSqm"":10.01,
+  ""roomType"": ""SINGLE"",
+  ""status"": ""AVAILABLE""
+}"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"":{
+    ""id"":1
+  }
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	Sửa thông tin phòng	Nam		{{beURL}} /room/update	"{
+  ""surveyAnswers"": [
+    {
+      ""id"":1
+      ""point"": 3
+    }
+  ],
+  ""roomNotCoverImageIds"": [
+    1,
+    2
+  ],
+  ""roomCoverImageId"": 3,
+  
+  ""id"":1,
+  ""landlordUserId"": 1,
+  ""title"": ""abc"",
+  ""description"": ""abc"",
+  ""address"": ""abc"",
+  ""latitude"": 10.000001,
+  ""longitude"": 10.000001,
+  ""priceVnd"": 10000,
+  ""areaSqm"": 10.01,
+  ""roomType"": ""SINGLE"",
+  ""status"": ""AVAILABLE""
+}"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"":{
+    ""id"":1
+  }
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	"Xem danh sách phòng 
+(chủ nào thì xem phòng đấy)"	Nam		{{beURL}} /room/all	"{
+  ""pageNumber"": 0,
+  ""pageSize"": 20
+}"	"{
+  ""code"": ""00"",
+  ""message"": null,
+  ""data"": {
+    ""pageNumber"": 0,
+    ""pageSize"": 20,
+    ""totalElements"": 6,
+    ""totalPages"": 1,
+    ""data"": [
+      {
+        ""id"": 1,
+        ""landlordUserId"": 1,
+        ""areaTypeId"":1,
+        ""title"": ""abc"",
+        ""description"": ""abc"",
+        ""address"": ""abc"",
+        ""latitude"": 10.000001,
+        ""longitude"": 10.000001,
+        ""priceVnd"": 10000,
+        ""areaSqm"": 10.01,
+        ""roomType"": ""SINGLE"",
+        ""status"": ""AVAILABLE"",
+        ""avgAmenity"":4.8,
+        ""avgSecurity"":3.4,
+
+        ""roomCoverImageId"":1,
+        ""roomCoverImageUrl"": ""abc""
+        
+      }
+    ]
+  }
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
+	Xem chi tiết phòng	Nam		"{{beURL}} /room/detail
+Cần kéo code Test Be về để đọc
+
+Nghiên cứu xem có tool gì"			
+	Xóa phòng	Phương		{{beURL}} /room/delete	"{
+  ""ids"": [1,2]
+}"	"{
+    ""code"": ""00"",
+    ""message"": null,
+    ""data"": ""successful""
+}"	"{
+    ""code"": ""exception......"",
+    ""message"": ""Không......."",
+    ""data"": null
+}"
