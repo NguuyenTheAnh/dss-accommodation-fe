@@ -222,11 +222,11 @@
         width: 280px;
     }
 
-    .logo-icon {
+    .sidebar-logo .logo-icon {
         font-size: 40px;
     }
 
-    .logo-text {
+    .sidebar-logo .logo-text {
         font-size: var(--font-size-lg);
     }
 }

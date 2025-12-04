@@ -61,12 +61,12 @@
     margin-bottom: var(--spacing-lg);
 }
 
-.logo-icon {
+.login-logo .logo-icon {
     font-size: 48px;
     color: var(--primary-green);
 }
 
-.logo-text {
+.login-logo .logo-text {
     font-size: var(--font-size-xxxl);
     font-weight: var(--font-weight-bold);
     margin: 0;
@@ -214,11 +214,11 @@
         padding: var(--spacing-xl);
     }
 
-    .logo-icon {
+    .login-logo .logo-icon {
         font-size: 36px;
     }
 
-    .logo-text {
+    .login-logo .logo-text {
         font-size: var(--font-size-xxl);
     }
 
