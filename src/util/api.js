@@ -81,7 +81,7 @@ const deleteRoomsApi = (ids) => {
  */
 const getAllAreaTypesApi = () => {
     const URL_API = "/area-types/all";
-    return axios.get(URL_API);
+    return axios.post(URL_API, {});
 }
 
 // ==========================================
@@ -93,7 +93,7 @@ const getAllAreaTypesApi = () => {
  */
 const getAllSurveysApi = () => {
     const URL_API = "/survey/all";
-    return axios.get(URL_API);
+    return axios.post(URL_API, {});
 }
 
 // ==========================================
@@ -181,8 +181,8 @@ const searchRoomsApi = (filter = {}, pageNumber = 0, pageSize = 10) => {
  * Get featured rooms (Public)
  */
 const getFeaturedRoomsApi = () => {
-    const URL_API = "/api/rooms/featured"; // TODO: Backend cần implement
-    return axios.get(URL_API);
+    const URL_API = "/api/rooms/featured";
+    return axios.post(URL_API, {});
 }
 
 /**
@@ -210,7 +210,7 @@ const loginApi = (email, password) => {
 
 const getUserApi = () => {
     const URL_API = "/v1/api/user";
-    return axios.get(URL_API);
+    return axios.post(URL_API, {});
 }
 
 export {

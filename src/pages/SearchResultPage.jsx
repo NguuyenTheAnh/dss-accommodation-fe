@@ -67,10 +67,12 @@ const SearchResultPage = () => {
     const endIndex = startIndex + pageSize;
 
     const handleFilterChange = (newFilters) => {
-        setFilters(newFilters);
-        setCurrentPage(1);
         console.log('Filters updated:', newFilters);
-        // Trigger API call with new filters
+        setFilters(newFilters);
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        }
+        // useEffect will trigger API call automatically
     };
 
     const handleResetFilters = () => {
@@ -85,7 +87,9 @@ const SearchResultPage = () => {
             securityRange: [1, 5]
         };
         setFilters(resetFilters);
-        setCurrentPage(1);
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        }
     };
 
     const handlePageChange = (page) => {
