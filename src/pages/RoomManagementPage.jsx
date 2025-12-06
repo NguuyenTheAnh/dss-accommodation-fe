@@ -24,18 +24,7 @@ const RoomManagementPage = () => {
 
     const fetchAreaTypes = async () => {
         try {
-            // MOCK API - Success case
-            const response = {
-                code: '00',
-                message: null,
-                data: [
-                    { id: 1, name: 'G\u1ea7n tr\u01b0\u1eddng' },
-                    { id: 2, name: 'Trung t\u00e2m' },
-                    { id: 3, name: 'Ngo\u1ea1i th\u00e0nh' }
-                ]
-            };
-
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await getAllAreaTypesApi();
 
             if (response.code === '00') {
                 setAreaTypes(response.data || []);

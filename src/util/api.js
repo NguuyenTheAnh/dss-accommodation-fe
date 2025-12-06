@@ -6,12 +6,20 @@ import axios from './axios.customize';
 
 /**
  * Admin login
- * @param {string} username 
- * @param {string} password 
+ * @param {Object} credentials - { username, password }
  */
-const adminLoginApi = (username, password) => {
-    const URL_API = "/auth/login";
-    return axios.post(URL_API, { username, password });
+const adminLoginApi = (credentials) => {
+    const URL_API = "/api/auth/login";
+    return axios.post(URL_API, { email: credentials.username, password: credentials.password });
+}
+
+/**
+ * Register new landlord account
+ * @param {Object} userData - { email, password, fullName, phoneNumber }
+ */
+const registerApi = (userData) => {
+    const URL_API = "/api/auth/register";
+    return axios.post(URL_API, userData);
 }
 
 // ==========================================
@@ -208,6 +216,7 @@ const getUserApi = () => {
 export {
     // Auth
     adminLoginApi,
+    registerApi,
 
     // Room Management
     getAllRoomsApi,

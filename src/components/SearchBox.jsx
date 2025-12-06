@@ -17,16 +17,7 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
 
     const fetchSchools = async () => {
         try {
-            // MOCK API - Success case với 1 trường HUST
-            const response = {
-                code: '00',
-                message: null,
-                data: [
-                    { id: 1, name: 'HUST - Đại học Bách Khoa Hà Nội' }
-                ]
-            };
-
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await getAllSchoolsApi();
 
             if (response.code === '00' && response.data) {
                 const schoolOptions = response.data.map(school => ({
@@ -42,18 +33,7 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
 
     const fetchAreaTypes = async () => {
         try {
-            // MOCK API - Success case
-            const response = {
-                code: '00',
-                message: null,
-                data: [
-                    { id: 1, name: 'G\u1ea7n tr\u01b0\u1eddng' },
-                    { id: 2, name: 'Trung t\u00e2m' },
-                    { id: 3, name: 'Ngo\u1ea1i th\u00e0nh' }
-                ]
-            };
-
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await getAllAreaTypesApi();
 
             if (response.code === '00' && response.data) {
                 // Map API response to Select options format

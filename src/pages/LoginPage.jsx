@@ -20,23 +20,7 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            // MOCK API - Success case
-            let response;
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            if (username === 'test1' && password === '123456') {
-                response = {
-                    code: '00',
-                    message: null,
-                    data: { username: 'test1' }
-                };
-            } else {
-                response = {
-                    code: 'AUTH_FAILED',
-                    message: 'Tên đăng nhập hoặc mật khẩu không đúng',
-                    data: null
-                };
-            }
+            const response = await adminLoginApi({ username, password });
 
             if (response.code === '00') {
                 message.success('Đăng nhập thành công!');
@@ -115,6 +99,9 @@ const LoginPage = () => {
                     </div>
 
                     <div className="login-footer">
+                        <p className="footer-text">
+                            Chưa có tài khoản? <a href="/register" className="footer-link">Đăng ký ngay</a>
+                        </p>
                         <p className="footer-text">
                             Quay về <a href="/" className="footer-link">Trang chủ</a>
                         </p>

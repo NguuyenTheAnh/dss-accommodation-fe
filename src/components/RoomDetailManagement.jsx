@@ -48,17 +48,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     const fetchAreaTypes = async () => {
         try {
-            // MOCK API
-            const response = {
-                code: '00',
-                message: null,
-                data: [
-                    { id: 1, name: 'Gần trường' },
-                    { id: 2, name: 'Trung tâm' },
-                    { id: 3, name: 'Ngoại thành' }
-                ]
-            };
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await getAllAreaTypesApi();
             if (response.code === '00') {
                 setAreaTypes(response.data || []);
             }
