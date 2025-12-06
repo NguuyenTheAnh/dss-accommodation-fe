@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button, Tabs, Tag, Card, Divider, Row, Col, Image, Rate, message, List, Form, Input, InputNumber, Select } from 'antd';
-import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined } from '@ant-design/icons';
-import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi } from '../util/api';
+import { Button, Tabs, Tag, Card, Divider, Row, Col, Image, Rate, message, List, Form, Input, InputNumber, Select, Upload } from 'antd';
+import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined, UploadOutlined, DeleteFilled } from '@ant-design/icons';
+import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi } from '../util/api';
 import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 import './RoomDetailManagement.css';
 
@@ -17,6 +17,10 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
     const [surveyForm] = Form.useForm();
+    const [coverImage, setCoverImage] = useState(null); // {id, url}
+    const [otherImages, setOtherImages] = useState([]); // [{id, url}]
+    const [uploadingCover, setUploadingCover] = useState(false);
+    const [uploadingOthers, setUploadingOthers] = useState(false);
 
     const isEditMode = mode === 'edit' || mode === 'add';
     const isAddMode = mode === 'add';
@@ -244,6 +248,80 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         return count > 0 ? (total / count).toFixed(1) : 0;
     };
 
+    // Handle image upload
+    const handleUploadCoverImage = async (file) => {
+        try {
+            setUploadingCover(true);
+            const formData = new FormData();
+            formData.append('files', file);
+
+            const response = await uploadFilesApi(formData);
+
+            if (response.code === '00' && response.data && response.data.length > 0) {
+                const uploadedFile = response.data[0];
+                setCoverImage({
+                    id: uploadedFile.id,
+                    url: `http://localhost:8080${uploadedFile.url}`
+                });
+                message.success('Upload ảnh bìa thành công');
+            } else {
+                message.error('Upload ảnh bìa thất bại');
+            }
+        } catch (error) {
+            console.error('Error uploading cover image:', error);
+            message.error('Có lỗi xảy ra khi upload ảnh bìa');
+        } finally {
+            setUploadingCover(false);
+        }
+        return false; // Prevent auto upload
+    };
+
+    const handleUploadOtherImages = async (file, fileList) => {
+        // Chỉ xử lý khi là file cuối cùng trong danh sách để tránh gọi nhiều lần
+        const isLastFile = fileList[fileList.length - 1] === file;
+        if (!isLastFile) {
+            return false;
+        }
+
+        try {
+            setUploadingOthers(true);
+            const formData = new FormData();
+
+            // Upload tất cả files được chọn
+            fileList.forEach(f => {
+                formData.append('files', f);
+            });
+
+            const response = await uploadFilesApi(formData);
+
+            if (response.code === '00' && response.data && response.data.length > 0) {
+                // Thêm tất cả ảnh đã upload vào danh sách
+                const newImages = response.data.map(uploadedFile => ({
+                    id: uploadedFile.id,
+                    url: `http://localhost:8080${uploadedFile.url}`
+                }));
+                setOtherImages(prev => [...prev, ...newImages]);
+                message.success(`Upload thành công ${response.data.length} ảnh`);
+            } else {
+                message.error('Upload ảnh thất bại');
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            message.error('Có lỗi xảy ra khi upload ảnh');
+        } finally {
+            setUploadingOthers(false);
+        }
+        return false; // Prevent auto upload
+    };
+
+    const handleRemoveCoverImage = () => {
+        setCoverImage(null);
+    };
+
+    const handleRemoveOtherImage = (imageId) => {
+        setOtherImages(prev => prev.filter(img => img.id !== imageId));
+    };
+
     // Handle form submit
     const handleSubmit = async () => {
         try {
@@ -266,7 +344,9 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
             const updatedRoom = {
                 ...roomDetail,
                 ...roomValues,
-                surveyAnswers
+                surveyAnswers,
+                roomCoverImageId: coverImage?.id || null,
+                roomNotCoverImageIds: otherImages.map(img => img.id)
             };
 
             if (onSave) {
@@ -448,6 +528,82 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     <Option key={area.id} value={area.id}>{area.name}</Option>
                                 ))}
                             </Select>
+                        </Form.Item>
+
+                        <Divider />
+
+                        <h3 className="section-title">Ảnh phòng</h3>
+
+                        <Form.Item label="Ảnh bìa">
+                            {coverImage ? (
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <img
+                                        src={coverImage.url}
+                                        alt="Cover"
+                                        style={{ width: '100%', maxWidth: 400, height: 250, objectFit: 'cover', borderRadius: 8 }}
+                                    />
+                                    <Button
+                                        type="primary"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteFilled />}
+                                        onClick={handleRemoveCoverImage}
+                                        style={{ position: 'absolute', top: 8, right: 8 }}
+                                    />
+                                </div>
+                            ) : (
+                                <Upload
+                                    beforeUpload={handleUploadCoverImage}
+                                    showUploadList={false}
+                                    accept="image/*"
+                                >
+                                    <Button icon={<UploadOutlined />} loading={uploadingCover} size="large" block>
+                                        {uploadingCover ? 'Đang tải lên...' : 'Chọn ảnh bìa'}
+                                    </Button>
+                                </Upload>
+                            )}
+                            <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
+                                Ảnh bìa sẽ hiển thị làm ảnh đại diện của phòng
+                            </div>
+                        </Form.Item>
+
+                        <Form.Item label="Ảnh khác">
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                {otherImages.map((img) => (
+                                    <div key={img.id} style={{ position: 'relative', display: 'inline-block' }}>
+                                        <img
+                                            src={img.url}
+                                            alt="Other"
+                                            style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }}
+                                        />
+                                        <Button
+                                            type="primary"
+                                            danger
+                                            size="small"
+                                            icon={<DeleteFilled />}
+                                            onClick={() => handleRemoveOtherImage(img.id)}
+                                            style={{ position: 'absolute', top: 4, right: 4 }}
+                                        />
+                                    </div>
+                                ))}
+                                <Upload
+                                    beforeUpload={handleUploadOtherImages}
+                                    showUploadList={false}
+                                    accept="image/*"
+                                    multiple
+                                >
+                                    <Button
+                                        icon={<UploadOutlined />}
+                                        loading={uploadingOthers}
+                                        style={{ width: 120, height: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+                                    >
+                                        <span>{uploadingOthers ? 'Đang tải...' : '+'}</span>
+                                    </Button>
+                                </Upload>
+                            </div>
+                            <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
+                                Có thể upload nhiều ảnh để hiển thị chi tiết phòng
+                            </div>
                         </Form.Item>
                     </Card>
                 </Col>

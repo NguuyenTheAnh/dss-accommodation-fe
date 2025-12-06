@@ -152,9 +152,11 @@ const reorderSurveyQuestionsApi = (data) => {
 /**
  * Upload files
  * @param {FormData} formData - with 'files' field
+ * @returns {Promise} Response format: { code: "00", message: null, data: [{id: Long, url: String, isDeleted: Boolean}] }
+ * BE returns AttachFile entity: { id, url, isDeleted }
  */
 const uploadFilesApi = (formData) => {
-    const URL_API = "/file/upload";
+    const URL_API = "/api/files/upload";
     return axios.post(URL_API, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
