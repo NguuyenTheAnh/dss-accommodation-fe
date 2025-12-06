@@ -92,7 +92,7 @@ const getAllAreaTypesApi = () => {
  * Get all surveys
  */
 const getAllSurveysApi = () => {
-    const URL_API = "/survey/all";
+    const URL_API = "/surveys/all";
     return axios.post(URL_API, {});
 }
 
@@ -105,7 +105,7 @@ const getAllSurveysApi = () => {
  * @param {number} surveyId 
  */
 const getAllSurveyQuestionsApi = (surveyId) => {
-    const URL_API = "/survey-question/all";
+    const URL_API = "/survey-questions/all";
     return axios.post(URL_API, { surveyId });
 }
 
@@ -114,7 +114,7 @@ const getAllSurveyQuestionsApi = (surveyId) => {
  * @param {object} data - { surveyId, questionText }
  */
 const createSurveyQuestionApi = (data) => {
-    const URL_API = "/survey-question/create";
+    const URL_API = "/survey-questions/create";
     return axios.post(URL_API, data);
 }
 
@@ -123,7 +123,7 @@ const createSurveyQuestionApi = (data) => {
  * @param {object} data - { id, surveyId, questionText, questionOrder }
  */
 const updateSurveyQuestionApi = (data) => {
-    const URL_API = "/survey-question/update";
+    const URL_API = "/survey-questions/update";
     return axios.post(URL_API, data);
 }
 
@@ -132,7 +132,7 @@ const updateSurveyQuestionApi = (data) => {
  * @param {number[]} ids 
  */
 const deleteSurveyQuestionsApi = (ids) => {
-    const URL_API = "/survey-question/delete";
+    const URL_API = "/survey-questions/delete";
     return axios.post(URL_API, { ids });
 }
 
@@ -141,7 +141,7 @@ const deleteSurveyQuestionsApi = (ids) => {
  * @param {object} data - { surveyId, orders: [{id, questionOrder}] }
  */
 const reorderSurveyQuestionsApi = (data) => {
-    const URL_API = "/survey-question/reorder";
+    const URL_API = "/survey-questions/reorder";
     return axios.post(URL_API, data);
 }
 

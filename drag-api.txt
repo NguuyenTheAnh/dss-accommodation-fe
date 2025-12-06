@@ -5,7 +5,7 @@ Khi FE kéo-thả (drag & drop) để sắp xếp lại thứ tự câu hỏi tr
 
 ## 2. Endpoint
 
-**POST** `/survey-question/reorder`
+**POST** `/survey-questions/reorder`
 
 ## 3. Request Body
 

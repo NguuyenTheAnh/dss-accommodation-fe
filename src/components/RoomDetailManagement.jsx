@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Tabs, Tag, Card, Divider, Row, Col, Image, Rate, message, List, Form, Input, InputNumber, Select, Upload } from 'antd';
 import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined, UploadOutlined, DeleteFilled } from '@ant-design/icons';
-import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi } from '../util/api';
+import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi, getAllSurveysApi } from '../util/api';
 import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 import './RoomDetailManagement.css';
 
@@ -133,67 +133,56 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     const fetchSurveyData = async () => {
         try {
-            // MOCK API - Get survey questions (2 loại: Tiện nghi và An ninh)
-            const questionsResponse = {
-                code: '00',
-                message: null,
-                data: [
-                    // Tiện nghi
-                    { id: 1, questionText: 'WiFi có ổn định không?', questionOrder: 1, category: 'amenity' },
-                    { id: 2, questionText: 'Điều hòa có hoạt động tốt không?', questionOrder: 2, category: 'amenity' },
-                    { id: 3, questionText: 'Nước nóng có đầy đủ không?', questionOrder: 3, category: 'amenity' },
-                    { id: 4, questionText: 'Giường tủ có đầy đủ không?', questionOrder: 4, category: 'amenity' },
-                    { id: 5, questionText: 'Khu vực nấu ăn có tiện lợi không?', questionOrder: 5, category: 'amenity' },
-                    // An ninh
-                    { id: 6, questionText: 'Có camera an ninh không?', questionOrder: 6, category: 'security' },
-                    { id: 7, questionText: 'Có bảo vệ 24/7 không?', questionOrder: 7, category: 'security' },
-                    { id: 8, questionText: 'Khu vực có an toàn không?', questionOrder: 8, category: 'security' },
-                    { id: 9, questionText: 'Cửa ra vào có khóa chặt không?', questionOrder: 9, category: 'security' },
-                    { id: 10, questionText: 'Có hệ thống báo cháy không?', questionOrder: 10, category: 'security' }
-                ]
-            };
+            // Lấy danh sách tất cả surveys để biết ID của AMENITY và SECURITY
+            const surveysResponse = await getAllSurveysApi();
 
-            // MOCK API - Get survey answers for this room (chỉ khi có room.id)
-            let answersResponse = { code: '00', message: null, data: [] };
-            if (room?.id) {
-                answersResponse = {
-                    code: '00',
-                    message: null,
-                    data: [
-                        // Tiện nghi
-                        { surveyQuestionId: 1, avgPoint: 4.8, totalAnswers: 15 },
-                        { surveyQuestionId: 2, avgPoint: 4.9, totalAnswers: 15 },
-                        { surveyQuestionId: 3, avgPoint: 4.2, totalAnswers: 15 },
-                        { surveyQuestionId: 4, avgPoint: 4.7, totalAnswers: 15 },
-                        { surveyQuestionId: 5, avgPoint: 4.5, totalAnswers: 15 },
-                        // An ninh
-                        { surveyQuestionId: 6, avgPoint: 4.6, totalAnswers: 15 },
-                        { surveyQuestionId: 7, avgPoint: 4.8, totalAnswers: 15 },
-                        { surveyQuestionId: 8, avgPoint: 4.3, totalAnswers: 15 },
-                        { surveyQuestionId: 9, avgPoint: 4.7, totalAnswers: 15 },
-                        { surveyQuestionId: 10, avgPoint: 4.4, totalAnswers: 15 }
-                    ]
-                };
+            if (surveysResponse.code !== '00' || !surveysResponse.data) {
+                message.error('Không thể tải danh sách khảo sát');
+                return;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const surveys = surveysResponse.data;
+            const amenitySurvey = surveys.find(s => s.type === 'AMENITY');
+            const securitySurvey = surveys.find(s => s.type === 'SECURITY');
 
-            if (questionsResponse.code === '00') {
-                setSurveyQuestions(questionsResponse.data);
-            }
-            if (answersResponse.code === '00') {
-                setSurveyAnswers(answersResponse.data);
-                // Set giá trị cho survey form khi edit
-                if (mode === 'edit' && answersResponse.data.length > 0) {
-                    const surveyValues = {};
-                    answersResponse.data.forEach(answer => {
-                        surveyValues[`question_${answer.surveyQuestionId}`] = answer.avgPoint;
-                    });
-                    surveyForm.setFieldsValue(surveyValues);
+            // Lấy câu hỏi từ cả 2 surveys
+            const allQuestions = [];
+
+            if (amenitySurvey) {
+                const amenityQuestionsResponse = await getAllSurveyQuestionsApi(amenitySurvey.id);
+                if (amenityQuestionsResponse.code === '00' && amenityQuestionsResponse.data) {
+                    const amenityQuestions = amenityQuestionsResponse.data.map(q => ({
+                        ...q,
+                        category: 'amenity'
+                    }));
+                    allQuestions.push(...amenityQuestions);
                 }
+            }
+
+            if (securitySurvey) {
+                const securityQuestionsResponse = await getAllSurveyQuestionsApi(securitySurvey.id);
+                if (securityQuestionsResponse.code === '00' && securityQuestionsResponse.data) {
+                    const securityQuestions = securityQuestionsResponse.data.map(q => ({
+                        ...q,
+                        category: 'security'
+                    }));
+                    allQuestions.push(...securityQuestions);
+                }
+            }
+
+            setSurveyQuestions(allQuestions);
+
+            // Nếu đang edit và có room.id, set giá trị từ surveyAnswers của room
+            if ((mode === 'edit' || mode === 'view') && roomDetail?.surveyAnswers?.length > 0) {
+                const surveyValues = {};
+                roomDetail.surveyAnswers.forEach(answer => {
+                    surveyValues[`question_${answer.surveyQuestionId}`] = answer.point;
+                });
+                surveyForm.setFieldsValue(surveyValues);
             }
         } catch (error) {
             console.error('Error fetching survey data:', error);
+            message.error('Có lỗi xảy ra khi tải dữ liệu khảo sát');
         }
     };
 
@@ -332,22 +321,40 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
             setLoading(true);
 
             // Chuyển đổi survey values thành format API
-            const surveyAnswers = Object.keys(surveyValues).map(key => {
-                const questionId = parseInt(key.replace('question_', ''));
-                return {
-                    surveyQuestionId: questionId,
-                    point: surveyValues[key]
-                };
-            });
+            const surveyAnswers = Object.keys(surveyValues)
+                .map(key => {
+                    const questionId = parseInt(key.replace('question_', ''));
+                    return {
+                        surveyQuestionId: questionId,
+                        point: surveyValues[key]
+                    };
+                })
+                .filter(answer => answer.point != null && answer.point !== 0); // Chỉ gửi những câu đã trả lời
 
             const roomValues = form.getFieldsValue();
+
+            // Tạo object theo đúng format BE yêu cầu
             const updatedRoom = {
-                ...roomDetail,
-                ...roomValues,
-                surveyAnswers,
+                landlordUserId: roomDetail?.landlordUserId || 1,
+                title: roomValues.title,
+                description: roomValues.description || '',
+                address: roomValues.address,
+                latitude: roomValues.latitude,
+                longitude: roomValues.longitude,
+                priceVnd: roomValues.priceVnd,
+                areaSqm: roomValues.areaSqm,
+                roomType: roomValues.roomType,
+                status: roomValues.status,
+                areaTypeId: roomValues.areaTypeId,
+                surveyAnswers: surveyAnswers,
                 roomCoverImageId: coverImage?.id || null,
                 roomNotCoverImageIds: otherImages.map(img => img.id)
             };
+
+            // Nếu đang edit, thêm id
+            if (roomDetail?.id) {
+                updatedRoom.id = roomDetail.id;
+            }
 
             if (onSave) {
                 await onSave(updatedRoom);

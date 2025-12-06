@@ -40,7 +40,7 @@ Area type	Lấy ra hết loại khu vực	Phương		{{beURL}} /area-types/all	{}
     ""message"": ""Không......."",
     ""data"": null
 }"
-Survey	Lấy ra hết trong bảng survey	Phương		{{beURL}} /survey/all	{}	"{
+Survey	Lấy ra hết trong bảng survey	Phương		{{beURL}} /surveys/all	{}	"{
   ""code"": ""00"",
   ""message"": null,
   ""data"": [
@@ -56,7 +56,7 @@ Survey	Lấy ra hết trong bảng survey	Phương		{{beURL}} /survey/all	{}	"{
     ""message"": ""Không......."",
     ""data"": null
 }"
-Survey question	Thêm	Phương		"{{beURL}} /survey-question/create
+Survey question	Thêm	Phương		"{{beURL}} /survey-questions/create
 
 chỗ này lưu ý: khi save thì lấy 
 questionOrder = questionOrder max hiện tại + 1"	"{
@@ -77,7 +77,7 @@ questionOrder = questionOrder max hiện tại + 1"	"{
     ""message"": ""Không......."",
     ""data"": null
 }"
-	Sửa	Phương		"{{beURL}} /survey-question/update
+	Sửa	Phương		"{{beURL}} /survey-questions/update
 
 chỗ này lưu ý: khi save thì lấy 
 nếu questionOrder đã tồn tại thì cập nhất các order sau nó +1
@@ -100,7 +100,7 @@ chưa tồn tại thì báo lỗi"	"{
     ""message"": ""Không......."",
     ""data"": null
 }"
-	Xóa	Phương		{{beURL}} /survey-question/delete	"{
+	Xóa	Phương		{{beURL}} /survey-questions/delete	"{
   ""ids"": [1,2]
 }"	"{
     ""code"": ""00"",
@@ -111,7 +111,7 @@ chưa tồn tại thì báo lỗi"	"{
     ""message"": ""Không......."",
     ""data"": null
 }"
-	Xem danh sách 	Phương		"{{beURL}} /survey-question/all
+	Xem danh sách 	Phương		"{{beURL}} /survey-questions/all
 
 chỗ này lưu ý: list trong data cần được sắp xếp
 theo thứ tự tăng dần của questionOrder"	"{
