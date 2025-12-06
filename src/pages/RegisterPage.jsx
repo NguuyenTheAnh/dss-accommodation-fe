@@ -50,9 +50,9 @@ const RegisterPage = () => {
                 phoneNumber
             });
 
-            if (response.status === '00') {
+            if (response.code === '00') {
                 message.success('Đăng ký thành công! Vui lòng đăng nhập');
-                navigate('/login');
+                navigate('/management/login');
             } else {
                 message.error(response.message || 'Đăng ký thất bại');
             }
@@ -170,7 +170,7 @@ const RegisterPage = () => {
 
                     <div className="register-footer">
                         <p className="footer-text">
-                            Đã có tài khoản? <a href="/login" className="footer-link">Đăng nhập</a>
+                            Đã có tài khoản? <a href="/management/login" className="footer-link">Đăng nhập</a>
                         </p>
                         <p className="footer-text">
                             Quay về <a href="/" className="footer-link">Trang chủ</a>

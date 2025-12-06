@@ -214,7 +214,7 @@ II. CẦN HOÀN THIỆN TIẾP
 III. MAPPING DATA STRUCTURE
 ═══════════════════════════════════════════
 
-📋 A. ROOM OBJECT (từ /room/all)
+📋 A. ROOM OBJECT (từ /api/rooms/all)
 ─────────────────────────────────
 
 API Response:
@@ -299,12 +299,12 @@ IV. CHECKLIST TÍCH HỢP
 
 BACKEND READY:
 ✅ /auth/login
-✅ /room/all
-✅ /room/detail
-✅ /room/create
-✅ /room/update
-✅ /room/delete
-✅ /area-type/all
+✅ /api/rooms/all
+✅ /api/rooms/detail
+✅ /api/rooms/create
+✅ /api/rooms/update
+✅ /api/rooms/delete
+✅ /area-types/all
 ✅ /survey/all
 ✅ /survey-question/all
 ✅ /survey-question/create
@@ -313,9 +313,9 @@ BACKEND READY:
 ✅ /file/upload
 
 BACKEND TODO (cần BE implement):
-⏳ /public/room/search
-⏳ /public/room/featured
-⏳ /public/room/detail
+⏳ /api/rooms/search
+⏳ /api/rooms/featured
+⏳ /api/rooms/detail
 
 FRONTEND DONE:
 ✅ API functions trong api.js
@@ -354,7 +354,7 @@ V. TESTING GUIDE
 
 4. TEST ROOM MANAGEMENT
    - Vào /management/rooms
-   - Check console → POST /room/all
+   - Check console → POST /api/rooms/all
    - Verify table hiển thị data từ API
    - Test pagination
    - Test delete (check confirm modal)
@@ -363,7 +363,7 @@ V. TESTING GUIDE
 5. TEST AREA TYPES
    - Mở modal "Thêm phòng"
    - Check dropdown "Khu vực" có data
-   - Console → GET /area-type/all
+   - Console → GET /area-types/all
 
 ═══════════════════════════════════════════
 VI. COMMON ISSUES & SOLUTIONS

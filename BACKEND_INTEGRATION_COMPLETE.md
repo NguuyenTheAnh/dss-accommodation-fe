@@ -170,7 +170,7 @@ Frontend filters → API filterParams:
 
 **API → UI:**
 ```
-GET /area-type/all
+GET /area-types/all
 → [{id: 1, name: "Gần trường"}]
 → [{value: 1, label: "Gần trường"}]
 → <Select options={areas} />
@@ -361,15 +361,15 @@ RESPONSE_CODE = {
 | API                          | Method | Component              | Mục đích                     |
 |------------------------------|--------|------------------------|------------------------------|
 | `/auth/login`                | POST   | LoginPage              | Admin đăng nhập              |
-| `/room/all`                  | POST   | RoomManagementPage     | Danh sách phòng (admin)      |
-| `/room/detail`               | POST   | RoomDetailManagement   | Chi tiết 1 phòng             |
-| `/room/create`               | POST   | RoomManagementPage     | Tạo phòng mới                |
-| `/room/update`               | POST   | RoomDetailManagement   | Cập nhật phòng               |
-| `/room/delete`               | POST   | RoomManagementPage     | Xóa phòng                    |
-| `/area-type/all`             | GET    | SearchBox, Filter, Form| Lấy danh sách khu vực        |
-| `/public/room/search`        | POST   | SearchResultPage       | Tìm kiếm phòng (student)     |
-| `/public/room/featured`      | GET    | HomePage               | Phòng nổi bật                |
-| `/public/room/detail`        | POST   | RoomDetailPage         | Chi tiết phòng (student)     |
+| `/api/rooms/all`                  | POST   | RoomManagementPage     | Danh sách phòng (admin)      |
+| `/api/rooms/detail`               | POST   | RoomDetailManagement   | Chi tiết 1 phòng             |
+| `/api/rooms/create`               | POST   | RoomManagementPage     | Tạo phòng mới                |
+| `/api/rooms/update`               | POST   | RoomDetailManagement   | Cập nhật phòng               |
+| `/api/rooms/delete`               | POST   | RoomManagementPage     | Xóa phòng                    |
+| `/area-types/all`             | GET    | SearchBox, Filter, Form| Lấy danh sách khu vực        |
+| `/api/rooms/search`        | POST   | SearchResultPage       | Tìm kiếm phòng (student)     |
+| `/api/rooms/featured`      | GET    | HomePage               | Phòng nổi bật                |
+| `/api/rooms/detail`        | POST   | RoomDetailPage         | Chi tiết phòng (student)     |
 
 ### ⏳ Chưa Tích Hợp (Chờ Backend)
 

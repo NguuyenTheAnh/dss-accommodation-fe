@@ -159,9 +159,9 @@ src/
 1. **API cho Quản lý phòng**:
    ```javascript
    // src/util/api.js
-   export const createRoomApi = (data) => axios.post('/api/rooms', data);
-   export const updateRoomApi = (id, data) => axios.put(`/api/rooms/${id}`, data);
-   export const deleteRoomApi = (id) => axios.delete(`/api/rooms/${id}`);
+   export const createRoomApi = (data) => axios.post('/api/rooms/', data);
+   export const updateRoomApi = (id, data) => axios.put(`/api/rooms//${id}`, data);
+   export const deleteRoomApi = (id) => axios.delete(`/api/rooms//${id}`);
    ```
 
 2. **API cho Khảo sát**:

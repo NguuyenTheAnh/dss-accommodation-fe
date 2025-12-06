@@ -12,6 +12,7 @@ import HomePage from './pages/HomePage.jsx';
 import SearchResultPage from './pages/SearchResultPage.jsx';
 import RoomDetailPage from './pages/RoomDetailPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
 import ManagementLayout from './components/ManagementLayout.jsx';
 import RoomManagementPage from './pages/RoomManagementPage.jsx';
 import SurveyQuestionsPage from './pages/SurveyQuestionsPage.jsx';
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
   {
     path: "/management/login",
     element: <LoginPage />
+  },
+  {
+    path: "/management/register",
+    element: <RegisterPage />
   },
   {
     path: "/management",

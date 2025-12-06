@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
 import { adminLoginApi } from '../util/api';
@@ -100,10 +100,10 @@ const LoginPage = () => {
 
                     <div className="login-footer">
                         <p className="footer-text">
-                            Chưa có tài khoản? <a href="/register" className="footer-link">Đăng ký ngay</a>
+                            Chưa có tài khoản? <Link to="/management/register" className="footer-link">Đăng ký ngay</Link>
                         </p>
                         <p className="footer-text">
-                            Quay về <a href="/" className="footer-link">Trang chủ</a>
+                            Quay về <Link to="/" className="footer-link">Trang chủ</Link>
                         </p>
                     </div>
                 </div>

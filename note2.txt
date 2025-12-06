@@ -65,9 +65,9 @@ Hiện tại toàn bộ data đang dùng mock/placeholder:
 
 Cần làm:
 1. Tạo API endpoints trong api.js cho:
-   - getRoomsApi(filters, page, pageSize) → GET /v1/api/rooms
-   - getRoomDetailApi(roomId) → GET /v1/api/rooms/:id
-   - getFeaturedRoomsApi() → GET /v1/api/rooms/featured
+   - getRoomsApi(filters, page, pageSize) → GET /v1/api/rooms/
+   - getRoomDetailApi(roomId) → GET /v1/api/rooms//:id
+   - getFeaturedRoomsApi() → GET /v1/api/rooms//featured
    - getAreasApi() → GET /v1/api/areas (danh sách quận/khu vực)
 
 2. Thay thế mock data:

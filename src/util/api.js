@@ -32,7 +32,7 @@ const registerApi = (userData) => {
  * @param {number} pageSize 
  */
 const getAllRoomsApi = (pageNumber = 0, pageSize = 20) => {
-    const URL_API = "/room/all";
+    const URL_API = "/api/rooms/all";
     return axios.post(URL_API, { pageNumber, pageSize });
 }
 
@@ -41,7 +41,7 @@ const getAllRoomsApi = (pageNumber = 0, pageSize = 20) => {
  * @param {number} roomId 
  */
 const getRoomDetailApi = (roomId) => {
-    const URL_API = "/room/detail";
+    const URL_API = "/api/rooms/detail";
     return axios.post(URL_API, { id: roomId });
 }
 
@@ -50,7 +50,7 @@ const getRoomDetailApi = (roomId) => {
  * @param {object} roomData - { surveyAnswers, roomNotCoverImageIds, roomCoverImageId, landlordUserId, title, description, address, latitude, longitude, priceVnd, areaSqm, roomType, status, areaTypeId }
  */
 const createRoomApi = (roomData) => {
-    const URL_API = "/room/create";
+    const URL_API = "/api/rooms/create";
     return axios.post(URL_API, roomData);
 }
 
@@ -59,7 +59,7 @@ const createRoomApi = (roomData) => {
  * @param {object} roomData - { id, surveyAnswers, roomNotCoverImageIds, roomCoverImageId, landlordUserId, title, description, address, latitude, longitude, priceVnd, areaSqm, roomType, status, areaTypeId }
  */
 const updateRoomApi = (roomData) => {
-    const URL_API = "/room/update";
+    const URL_API = "/api/rooms/update";
     return axios.post(URL_API, roomData);
 }
 
@@ -68,7 +68,7 @@ const updateRoomApi = (roomData) => {
  * @param {number[]} ids 
  */
 const deleteRoomsApi = (ids) => {
-    const URL_API = "/room/delete";
+    const URL_API = "/api/rooms/delete";
     return axios.post(URL_API, { ids });
 }
 
@@ -80,7 +80,7 @@ const deleteRoomsApi = (ids) => {
  * Get all area types
  */
 const getAllAreaTypesApi = () => {
-    const URL_API = "/area-type/all";
+    const URL_API = "/area-types/all";
     return axios.get(URL_API);
 }
 
@@ -173,7 +173,7 @@ const uploadFilesApi = (formData) => {
  * @param {number} pageSize 
  */
 const searchRoomsApi = (filter = {}, pageNumber = 0, pageSize = 10) => {
-    const URL_API = "/public/room/search"; // TODO: Backend cần implement
+    const URL_API = "/api/rooms/all"; // TODO: Backend cần implement
     return axios.post(URL_API, { pageNumber, pageSize, filter });
 }
 
@@ -181,7 +181,7 @@ const searchRoomsApi = (filter = {}, pageNumber = 0, pageSize = 10) => {
  * Get featured rooms (Public)
  */
 const getFeaturedRoomsApi = () => {
-    const URL_API = "/public/room/featured"; // TODO: Backend cần implement
+    const URL_API = "/api/rooms/featured"; // TODO: Backend cần implement
     return axios.get(URL_API);
 }
 
@@ -190,7 +190,7 @@ const getFeaturedRoomsApi = () => {
  * @param {number} roomId 
  */
 const getPublicRoomDetailApi = (roomId) => {
-    const URL_API = "/public/room/detail"; // TODO: Backend cần implement
+    const URL_API = "/api/rooms/detail"; // TODO: Backend cần implement
     return axios.post(URL_API, { id: roomId });
 }
 

@@ -58,28 +58,7 @@ const SurveyQuestionsPage = () => {
     // Fetch all surveys (AMENITY & SECURITY)
     const fetchSurveys = async () => {
         try {
-            // MOCK API - Success case
-            const response = {
-                code: '00',
-                message: null,
-                data: [
-                    {
-                        id: 1,
-                        type: 'AMENITY',
-                        title: 'Đánh giá tiện nghi',
-                        description: 'Đánh giá các tiện nghi trong phòng và khu vực xung quanh'
-                    },
-                    {
-                        id: 2,
-                        type: 'SECURITY',
-                        title: 'Đánh giá an ninh',
-                        description: 'Đánh giá mức độ an toàn và an ninh của khu vực'
-                    }
-                ]
-            };
-
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 500));
+            const response = await getAllSurveysApi();
 
             if (response.code === '00' && response.data) {
                 setSurveys(response.data);
@@ -100,34 +79,7 @@ const SurveyQuestionsPage = () => {
         try {
             setLoading(true);
 
-            // MOCK API - Success case with sample questions
-            const mockQuestions = {
-                1: [ // AMENITY questions
-                    { id: 1, surveyId: 1, questionText: 'Phòng có điều hòa không?', questionOrder: 1 },
-                    { id: 2, surveyId: 1, questionText: 'Phòng có máy nước nóng không?', questionOrder: 2 },
-                    { id: 3, surveyId: 1, questionText: 'Phòng có tủ lạnh không?', questionOrder: 3 },
-                    { id: 4, surveyId: 1, questionText: 'Phòng có máy giặt riêng hoặc chung không?', questionOrder: 4 },
-                    { id: 5, surveyId: 1, questionText: 'Phòng có WiFi không? Tốc độ như thế nào?', questionOrder: 5 },
-                    { id: 6, surveyId: 1, questionText: 'Khu vực có siêu thị, chợ gần không?', questionOrder: 6 },
-                    { id: 7, surveyId: 1, questionText: 'Có chỗ để xe riêng không?', questionOrder: 7 },
-                ],
-                2: [ // SECURITY questions
-                    { id: 8, surveyId: 2, questionText: 'Có bảo vệ 24/7 không?', questionOrder: 1 },
-                    { id: 9, surveyId: 2, questionText: 'Có camera an ninh không?', questionOrder: 2 },
-                    { id: 10, surveyId: 2, questionText: 'Cửa phòng có khóa an toàn không?', questionOrder: 3 },
-                    { id: 11, surveyId: 2, questionText: 'Khu vực có đèn chiếu sáng đầy đủ ban đêm không?', questionOrder: 4 },
-                    { id: 12, surveyId: 2, questionText: 'Có hệ thống báo cháy không?', questionOrder: 5 },
-                ]
-            };
-
-            const response = {
-                code: '00',
-                message: null,
-                data: mockQuestions[surveyId] || []
-            };
-
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const response = await getAllSurveyQuestionsApi(surveyId);
 
             if (response.code === '00' && response.data) {
                 // Sort by questionOrder
@@ -166,15 +118,7 @@ const SurveyQuestionsPage = () => {
     // Delete question(s)
     const handleDelete = async (ids) => {
         try {
-            // MOCK API - Success case
-            const response = {
-                code: '00',
-                message: null,
-                data: { success: true }
-            };
-
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 500));
+            const response = await deleteSurveyQuestionsApi(ids);
 
             if (response.code === '00') {
                 message.success('Xóa câu hỏi thành công');
@@ -194,7 +138,6 @@ const SurveyQuestionsPage = () => {
             setLoading(true);
 
             if (editingQuestion) {
-                // MOCK API - Update existing question
                 const updateData = {
                     id: editingQuestion.id,
                     surveyId: activeTab,
@@ -202,14 +145,7 @@ const SurveyQuestionsPage = () => {
                     questionOrder: values.questionOrder || editingQuestion.questionOrder
                 };
 
-                const response = {
-                    code: '00',
-                    message: null,
-                    data: { id: editingQuestion.id, ...updateData }
-                };
-
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const response = await updateSurveyQuestionApi(updateData);
 
                 if (response.code === '00') {
                     message.success('Cập nhật câu hỏi thành công');
@@ -219,20 +155,12 @@ const SurveyQuestionsPage = () => {
                     message.error(response.message || 'Cập nhật câu hỏi thất bại');
                 }
             } else {
-                // MOCK API - Create new question
                 const createData = {
                     surveyId: activeTab,
                     questionText: values.questionText
                 };
 
-                const response = {
-                    code: '00',
-                    message: null,
-                    data: { id: Math.floor(Math.random() * 10000), ...createData, questionOrder: questions.length + 1 }
-                };
-
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const response = await createSurveyQuestionApi(createData);
 
                 if (response.code === '00') {
                     message.success('Thêm câu hỏi thành công');
@@ -277,21 +205,7 @@ const SurveyQuestionsPage = () => {
                 questionOrder: q.questionOrder
             }));
 
-            // MOCK API - Gọi API reorder
-            // Khi backend sẵn sàng, uncomment dòng dưới và comment phần mock
-            // const response = await reorderSurveyQuestionsApi({ surveyId: activeTab, orders });
-
-            const response = {
-                code: '00',
-                message: null,
-                data: {
-                    success: true,
-                    updatedCount: orders.length
-                }
-            };
-
-            // Simulate API delay (chỉ cho mock)
-            await new Promise(resolve => setTimeout(resolve, 400));
+            const response = await reorderSurveyQuestionsApi({ surveyId: activeTab, orders });
 
             if (response.code === '00') {
                 message.success('Đã cập nhật thứ tự câu hỏi');

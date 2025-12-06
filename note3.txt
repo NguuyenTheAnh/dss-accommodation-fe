@@ -691,10 +691,10 @@ X. CẦN HOÀN THIỆN
 ──────────────────────────
 
 1. API ENDPOINTS CẦN TẠO
-   [ ] POST   /v1/api/rooms              - Create room
-   [ ] PUT    /v1/api/rooms/:id          - Update room
-   [ ] DELETE /v1/api/rooms/:id          - Delete room
-   [ ] GET    /v1/api/rooms/featured     - Featured rooms
+   [ ] POST   /v1/api/rooms/              - Create room
+   [ ] PUT    /v1/api/rooms//:id          - Update room
+   [ ] DELETE /v1/api/rooms//:id          - Delete room
+   [ ] GET    /v1/api/rooms//featured     - Featured rooms
    [ ] POST   /v1/api/surveys            - Submit survey
    [ ] GET    /v1/api/surveys/:roomId    - Get surveys
    [ ] POST   /v1/api/auth/login         - Admin login
