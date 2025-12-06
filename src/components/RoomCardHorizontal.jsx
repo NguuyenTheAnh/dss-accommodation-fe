@@ -3,6 +3,13 @@ import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, StarFilled, CrownF
 import { useNavigate } from 'react-router-dom';
 import './RoomCardHorizontal.css';
 
+const buildImageUrl = (url) => {
+    if (!url) return url;
+    if (url.startsWith('http')) return url;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+    return `${backendUrl}${url}`;
+};
+
 const RoomCardHorizontal = ({ room, isBest = false }) => {
     const navigate = useNavigate();
     const {
@@ -25,7 +32,7 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     } = room || {};
 
     // Map new API fields to display values
-    const displayImage = roomCoverImageUrl || image || 'https://via.placeholder.com/400x250?text=Room+Image';
+    const displayImage = buildImageUrl(roomCoverImageUrl || image) || 'https://via.placeholder.com/400x250?text=Room+Image';
     const displayTitle = title || 'Phòng trọ cao cấp';
     const displayPrice = priceVnd ? priceVnd.toLocaleString() : (price || '3.000.000');
     const displayArea = areaSqm || area || '25';

@@ -25,6 +25,28 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
     const isEditMode = mode === 'edit' || mode === 'add';
     const isAddMode = mode === 'add';
 
+    const getStoredAdminId = () => {
+        try {
+            const raw = localStorage.getItem('adminUser');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.id) return parsed.id;
+            }
+            const fallbackId = localStorage.getItem('adminUserId');
+            return fallbackId ? Number(fallbackId) : null;
+        } catch (error) {
+            console.error('Error reading admin id from storage:', error);
+            return null;
+        }
+    };
+
+    const buildImageUrl = (url) => {
+        if (!url) return url;
+        if (url.startsWith('http')) return url;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        return `${backendUrl}${url}`;
+    };
+
     useEffect(() => {
         fetchAreaTypes();
         fetchSurveyData(); // Lấy câu hỏi khảo sát cho tất cả mode
@@ -63,67 +85,38 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     const fetchRoomDetail = async () => {
         try {
-            // MOCK API - Success case with detailed room info
-            const mockRoomDetails = {
-                1: {
-                    id: 1,
-                    landlordUserId: 1,
-                    areaTypeId: 1,
-                    areaTypeName: 'Gần trường',
-                    title: 'Phòng trọ cao cấp gần ĐH Bách Khoa',
-                    description: 'Phòng rộng rãi, đầy đủ tiện nghi, an ninh 24/7. Gần trường học, siêu thị, bệnh viện. Chủ nhà thân thiện, hỗ trợ nhiệt tình.',
-                    address: '123 Đại Cồ Việt, Hai Bà Trưng, Hà Nội',
-                    latitude: 21.0285,
-                    longitude: 105.8542,
-                    priceVnd: 3500000,
-                    areaSqm: 25.5,
-                    roomType: 'SINGLE',
-                    status: 'AVAILABLE',
-                    avgAmenity: 4.8,
-                    avgSecurity: 4.5,
-                    roomCoverImageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500',
-                    roomNotCoverImageUrls: [
-                        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500',
-                        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500',
-                        'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=500'
-                    ],
-                    amenities: ['WiFi', 'Điều hòa', 'Máy giặt', 'Bếp', 'Chỗ đậu xe', 'An ninh 24/7'],
-                    landlord: {
-                        fullName: 'Nguyễn Văn A',
-                        phoneNumber: '0912345678'
-                    }
-                }
-            };
-
-            const response = {
-                code: '00',
-                message: null,
-                data: mockRoomDetails[room.id] || {
-                    ...mockRoomDetails[1],
-                    id: room.id,
-                    title: room.title || 'Phòng chưa có tên'
-                }
-            };
-
-            await new Promise(resolve => setTimeout(resolve, 400));
+            const response = await getRoomDetailApi(room.id);
 
             if (response.code === '00' && response.data) {
-                setRoomDetail(response.data);
+                const detail = response.data;
+                setRoomDetail(detail);
+                setSurveyAnswers(detail.surveyAnswers || []);
+
                 // Set form values cho chế độ edit
                 if (isEditMode) {
                     form.setFieldsValue({
-                        title: response.data.title,
-                        description: response.data.description,
-                        address: response.data.address,
-                        latitude: response.data.latitude,
-                        longitude: response.data.longitude,
-                        priceVnd: response.data.priceVnd,
-                        areaSqm: response.data.areaSqm,
-                        roomType: response.data.roomType,
-                        status: response.data.status,
-                        areaTypeId: response.data.areaTypeId
+                        title: detail.title,
+                        description: detail.description,
+                        address: detail.address,
+                        latitude: detail.latitude,
+                        longitude: detail.longitude,
+                        priceVnd: detail.priceVnd,
+                        areaSqm: detail.areaSqm,
+                        roomType: detail.roomType,
+                        status: detail.status,
+                        areaTypeId: detail.areaTypeId
                     });
+
+                    if (detail.surveyAnswers?.length) {
+                        const surveyValues = {};
+                        detail.surveyAnswers.forEach(answer => {
+                            surveyValues[`question_${answer.surveyQuestionId}`] = answer.point;
+                        });
+                        surveyForm.setFieldsValue(surveyValues);
+                    }
                 }
+            } else {
+                message.error(response.message || 'Không thể tải chi tiết phòng');
             }
         } catch (error) {
             console.error('Error fetching room detail:', error);
@@ -248,9 +241,10 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             if (response.code === '00' && response.data && response.data.length > 0) {
                 const uploadedFile = response.data[0];
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
                 setCoverImage({
                     id: uploadedFile.id,
-                    url: `http://localhost:8080${uploadedFile.url}`
+                    url: `${backendUrl}${uploadedFile.url}`
                 });
                 message.success('Upload ảnh bìa thành công');
             } else {
@@ -285,9 +279,10 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             if (response.code === '00' && response.data && response.data.length > 0) {
                 // Thêm tất cả ảnh đã upload vào danh sách
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
                 const newImages = response.data.map(uploadedFile => ({
                     id: uploadedFile.id,
-                    url: `http://localhost:8080${uploadedFile.url}`
+                    url: `${backendUrl}${uploadedFile.url}`
                 }));
                 setOtherImages(prev => [...prev, ...newImages]);
                 message.success(`Upload thành công ${response.data.length} ảnh`);
@@ -335,7 +330,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             // Tạo object theo đúng format BE yêu cầu
             const updatedRoom = {
-                landlordUserId: roomDetail?.landlordUserId || 1,
+                landlordUserId: roomDetail?.landlordUserId || getStoredAdminId() || 1,
                 title: roomValues.title,
                 description: roomValues.description || '',
                 address: roomValues.address,
@@ -645,7 +640,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                         <Image.PreviewGroup>
                             <div className="main-image">
                                 <Image
-                                    src={roomDetail?.roomCoverImageUrl || 'https://via.placeholder.com/600x400'}
+                                    src={buildImageUrl(roomDetail?.roomCoverImageUrl) || 'https://via.placeholder.com/600x400'}
                                     alt={roomDetail?.title}
                                     className="primary-image"
                                 />
@@ -655,7 +650,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                     {roomDetail.roomNotCoverImageUrls.slice(0, 3).map((img, index) => (
                                         <Image
                                             key={index}
-                                            src={img}
+                                            src={buildImageUrl(img)}
                                             alt={`${roomDetail.title} - ${index + 2}`}
                                             className="thumbnail-image"
                                         />

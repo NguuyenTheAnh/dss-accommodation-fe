@@ -26,6 +26,13 @@ const LoginPage = () => {
                 message.success('Đăng nhập thành công!');
                 localStorage.setItem('isAdminLoggedIn', 'true');
                 localStorage.setItem('adminUsername', username);
+                // Lưu thông tin user để tái sử dụng (vd: landlordUserId khi tạo phòng)
+                if (response.data) {
+                    localStorage.setItem('adminUser', JSON.stringify(response.data));
+                    if (response.data.id !== undefined && response.data.id !== null) {
+                        localStorage.setItem('adminUserId', String(response.data.id));
+                    }
+                }
                 navigate('/management/rooms');
             } else {
                 message.error(response.message || 'Tên đăng nhập hoặc mật khẩu không đúng!');

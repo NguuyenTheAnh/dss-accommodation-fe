@@ -5,7 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import RoomInfoSection from '../components/RoomInfoSection';
 import RouteMapSection from '../components/RouteMapSection';
 import DecisionExplanation from '../components/DecisionExplanation';
-import { getPublicRoomDetailApi } from '../util/api';
+import { getRoomDetailApi } from '../util/api';
 import { DEFAULT_COORDINATES } from '../util/constants';
 import './RoomDetailPage.css';
 
@@ -15,6 +15,13 @@ const RoomDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [roomData, setRoomData] = useState(null);
     const [selectedSchool, setSelectedSchool] = useState(null);
+
+    const buildImageUrl = (url) => {
+        if (!url) return url;
+        if (url.startsWith('http')) return url;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        return `${backendUrl}${url}`;
+    };
 
     useEffect(() => {
         fetchRoomDetail();
@@ -27,6 +34,16 @@ const RoomDetailPage = () => {
 
             if (response.code === '00' && response.data) {
                 const room = response.data;
+                const imageList = [];
+                if (room.roomCoverImageUrl) {
+                    imageList.push(buildImageUrl(room.roomCoverImageUrl));
+                }
+                if (room.roomNotCoverImageUrls && Array.isArray(room.roomNotCoverImageUrls)) {
+                    imageList.push(...room.roomNotCoverImageUrls.map(buildImageUrl));
+                }
+                if (imageList.length === 0) {
+                    imageList.push('https://via.placeholder.com/600x400');
+                }
                 // Map API data to component format
                 const mappedRoom = {
                     id: room.id,
@@ -40,7 +57,7 @@ const RoomDetailPage = () => {
                         lng: room.longitude || DEFAULT_COORDINATES.longitude,
                         district: room.address?.split(',')[1]?.trim() || 'Hà Nội'
                     },
-                    images: room.roomCoverImageUrl ? [room.roomCoverImageUrl] : ['https://via.placeholder.com/600x400'],
+                    images: imageList,
                     rating: room.avgAmenity || room.avgSecurity || 4.5,
                     reviewCount: 0,
                     amenities: ['WiFi', 'Điều hòa', 'Máy giặt', 'Bếp', 'Chỗ đậu xe', 'An ninh 24/7'],

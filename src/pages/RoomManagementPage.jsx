@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, InputNumber, message, Tag, Select } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import RoomDetailManagement from '../components/RoomDetailManagement';
-import { getAllRoomsApi, deleteRoomsApi, createRoomApi, getAllAreaTypesApi } from '../util/api';
+import { getAllRoomsApi, deleteRoomsApi, createRoomApi, getAllAreaTypesApi, updateRoomApi, getRoomDetailApi } from '../util/api';
 import './RoomManagementPage.css';
 
 const { Option } = Select;
@@ -16,6 +16,28 @@ const RoomManagementPage = () => {
     const [detailMode, setDetailMode] = useState(null); // 'view' or 'edit'
     const [areaTypes, setAreaTypes] = useState([]);
     const [form] = Form.useForm();
+
+    const buildImageUrl = (url) => {
+        if (!url) return url;
+        if (url.startsWith('http')) return url;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        return `${backendUrl}${url}`;
+    };
+
+    const getStoredAdminId = () => {
+        try {
+            const raw = localStorage.getItem('adminUser');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.id) return parsed.id;
+            }
+            const fallbackId = localStorage.getItem('adminUserId');
+            return fallbackId ? Number(fallbackId) : null;
+        } catch (error) {
+            console.error('Error reading admin id from storage:', error);
+            return null;
+        }
+    };
 
     useEffect(() => {
         fetchRooms();
@@ -62,7 +84,7 @@ const RoomManagementPage = () => {
         // Tạo phòng mới rỗng với các giá trị mặc định
         const newRoom = {
             id: null, // null để đánh dấu là phòng mới
-            landlordUserId: 1,
+            landlordUserId: getStoredAdminId() || 1,
             areaTypeId: 1,
             areaTypeName: '',
             title: '',
@@ -84,15 +106,27 @@ const RoomManagementPage = () => {
         setDetailMode('add');
     };
 
-    const handleView = (record) => {
-        setSelectedRoom(record);
-        setDetailMode('view');
+    const openRoomDetail = async (record, modeType) => {
+        setLoading(true);
+        try {
+            const response = await getRoomDetailApi(record.id);
+            if (response.code === '00' && response.data) {
+                setSelectedRoom(response.data);
+                setDetailMode(modeType);
+            } else {
+                message.error(response.message || 'Không thể tải thông tin phòng');
+            }
+        } catch (error) {
+            console.error('Error loading room detail:', error);
+            message.error('Có lỗi khi tải thông tin phòng');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleEdit = (record) => {
-        setSelectedRoom(record);
-        setDetailMode('edit');
-    };
+    const handleView = (record) => openRoomDetail(record, 'view');
+
+    const handleEdit = (record) => openRoomDetail(record, 'edit');
 
     const handleBackToList = () => {
         setSelectedRoom(null);
@@ -101,26 +135,20 @@ const RoomManagementPage = () => {
 
     const handleSaveDetail = async (updatedRoom) => {
         try {
-            if (detailMode === 'add') {
-                // Tạo phòng mới
-                const roomData = {
-                    landlordUserId: 1,
-                    title: updatedRoom.title,
-                    description: updatedRoom.description || '',
-                    address: updatedRoom.address,
-                    latitude: updatedRoom.latitude || 21.0285,
-                    longitude: updatedRoom.longitude || 105.8542,
-                    priceVnd: updatedRoom.priceVnd,
-                    areaSqm: updatedRoom.areaSqm,
-                    roomType: updatedRoom.roomType || 'SINGLE',
-                    status: updatedRoom.status,
-                    areaTypeId: updatedRoom.areaTypeId || 1,
-                    surveyAnswers: [],
-                    roomCoverImageId: null,
-                    roomNotCoverImageIds: []
-                };
+            const normalizedRoom = {
+                ...updatedRoom,
+                landlordUserId: updatedRoom.landlordUserId || getStoredAdminId() || 1,
+                latitude: updatedRoom.latitude ?? 21.0285,
+                longitude: updatedRoom.longitude ?? 105.8542,
+                areaTypeId: updatedRoom.areaTypeId || 1,
+                surveyAnswers: updatedRoom.surveyAnswers || [],
+                roomCoverImageId: updatedRoom.roomCoverImageId ?? null,
+                roomNotCoverImageIds: updatedRoom.roomNotCoverImageIds || []
+            };
 
-                const response = await createRoomApi(roomData);
+            if (detailMode === 'add') {
+                // Tạo phòng mới với đầy đủ payload (survey, ảnh)
+                const response = await createRoomApi(normalizedRoom);
 
                 if (response.code === '00') {
                     message.success('Thêm phòng thành công');
@@ -131,11 +159,11 @@ const RoomManagementPage = () => {
                 }
             } else {
                 // Cập nhật phòng
-                const response = await updateRoomApi(updatedRoom);
+                const response = await updateRoomApi(normalizedRoom);
 
                 if (response.code === '00') {
                     message.success('Cập nhật phòng thành công');
-                    setRooms(rooms.map(r => r.id === updatedRoom.id ? updatedRoom : r));
+                    setRooms(rooms.map(r => r.id === normalizedRoom.id ? normalizedRoom : r));
                     handleBackToList();
                 } else {
                     message.error(response.message || 'Cập nhật phòng thất bại');
@@ -175,7 +203,7 @@ const RoomManagementPage = () => {
     const handleSubmit = async (values) => {
         try {
             const roomData = {
-                landlordUserId: 1, // TODO: Get from auth context
+                landlordUserId: getStoredAdminId() || 1, // TODO: Get from auth context
                 title: values.name,
                 description: values.description || '',
                 address: values.address,
@@ -220,7 +248,7 @@ const RoomManagementPage = () => {
             key: 'image',
             width: 100,
             render: (url) => url ? (
-                <img src={url} alt="Room" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4 }} />
+                <img src={buildImageUrl(url)} alt="Room" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4 }} />
             ) : (
                 <div style={{ width: 60, height: 40, background: '#f0f0f0', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ fontSize: 10, color: '#999' }}>No Image</span>
