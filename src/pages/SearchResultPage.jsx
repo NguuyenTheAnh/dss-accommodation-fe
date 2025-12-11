@@ -42,8 +42,14 @@ const SearchResultPage = () => {
             const response = await searchRoomsApi(searchParams);
 
             if (response.code === '00' && response.data) {
-                setCurrentRooms(response.data.data || []);
+                const roomsData = response.data.data || [];
+                setCurrentRooms(roomsData);
                 setTotalRooms(response.data.totalElements || 0);
+                try {
+                    localStorage.setItem('roomsListCache', JSON.stringify(roomsData));
+                } catch (e) {
+                    console.warn('Cannot cache rooms list', e);
+                }
             } else {
                 message.error(response.message || 'Không thể tải danh sách phòng');
                 setCurrentRooms([]);

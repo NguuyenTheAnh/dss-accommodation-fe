@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Row, Col, Spin, Button, Tabs, message } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import RoomInfoSection from '../components/RoomInfoSection';
 import RouteMapSection from '../components/RouteMapSection';
-import DecisionExplanation from '../components/DecisionExplanation';
-import { getRoomDetailApi } from '../util/api';
 import { DEFAULT_COORDINATES } from '../util/constants';
 import './RoomDetailPage.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet default marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const RoomDetailPage = () => {
     const { id } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [roomData, setRoomData] = useState(null);
@@ -24,107 +34,82 @@ const RoomDetailPage = () => {
     };
 
     useEffect(() => {
-        fetchRoomDetail();
-    }, [id]);
-
-    const fetchRoomDetail = async () => {
+        setLoading(true);
         try {
-            setLoading(true);
-            const response = await getRoomDetailApi(id);
+            const roomFromState = location.state?.room;
+            let roomSource = roomFromState;
 
-            if (response.code === '00' && response.data) {
-                const room = response.data;
-                const imageList = [];
-                if (room.roomCoverImageUrl) {
-                    imageList.push(buildImageUrl(room.roomCoverImageUrl));
+            if (!roomSource) {
+                try {
+                    const cached = localStorage.getItem('roomsListCache');
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        roomSource = parsed.find((r) => `${r.id}` === `${id}`);
+                    }
+                } catch (e) {
+                    console.warn('Cannot read rooms cache', e);
                 }
-                if (room.roomNotCoverImageUrls && Array.isArray(room.roomNotCoverImageUrls)) {
-                    imageList.push(...room.roomNotCoverImageUrls.map(buildImageUrl));
+            }
+
+            if (roomSource) {
+                const imageList = [];
+                if (roomSource.roomCoverImageUrl) {
+                    imageList.push(buildImageUrl(roomSource.roomCoverImageUrl));
+                }
+                const notCoverUrls =
+                    roomSource.roomNotCoverImageUrls ||
+                    roomSource.roomNotCoverImages?.map((img) => img.roomNotCoverImageUrl);
+                if (notCoverUrls && Array.isArray(notCoverUrls)) {
+                    imageList.push(...notCoverUrls.map(buildImageUrl));
                 }
                 if (imageList.length === 0) {
                     imageList.push('https://via.placeholder.com/600x400');
                 }
-                // Map API data to component format
+
                 const mappedRoom = {
-                    id: room.id,
-                    title: room.title,
-                    description: room.description || 'Chưa có mô tả',
-                    price: room.priceVnd,
-                    area: room.areaSqm,
-                    address: room.address,
+                    id: roomSource.id,
+                    title: roomSource.title,
+                    description: roomSource.description || '',
+                    price: roomSource.priceVnd,
+                    area: roomSource.areaSqm,
+                    address: roomSource.address,
                     location: {
-                        lat: room.latitude || DEFAULT_COORDINATES.latitude,
-                        lng: room.longitude || DEFAULT_COORDINATES.longitude,
-                        district: room.address?.split(',')[1]?.trim() || 'Hà Nội'
+                        lat: roomSource.latitude || DEFAULT_COORDINATES.latitude,
+                        lng: roomSource.longitude || DEFAULT_COORDINATES.longitude,
+                        district: roomSource.address?.split(',')[1]?.trim() || ''
                     },
                     images: imageList,
-                    rating: room.avgAmenity || room.avgSecurity || 4.5,
+                    rating: roomSource.avgAmenity || roomSource.avgSecurity || 0,
+                    avgAmenity: roomSource.avgAmenity,
+                    avgSecurity: roomSource.avgSecurity,
                     reviewCount: 0,
-                    amenities: ['WiFi', 'Điều hòa', 'Máy giặt', 'Bếp', 'Chỗ đậu xe', 'An ninh 24/7'],
-                    roomType: room.roomType || 'Phòng đơn',
-                    rules: 'Liên hệ chủ nhà để biết thêm chi tiết',
-                    landlord: room.landlord,
-                    dssData: {
-                        rawAttributes: {
-                            price: room.priceVnd,
-                            area: room.areaSqm,
-                            distance: 1.2,
-                            rating: room.avgAmenity || 4.5,
-                            amenitiesCount: 6,
-                            securityScore: room.avgSecurity || 4.5
-                        },
-                        normalizedAttributes: {
-                            price: 0.75,
-                            area: 0.65,
-                            distance: 0.88,
-                            rating: (room.avgAmenity || 4.5) / 5,
-                            amenitiesCount: 1.0,
-                            securityScore: (room.avgSecurity || 4.5) / 5
-                        },
-                        weights: {
-                            price: 0.25,
-                            area: 0.15,
-                            distance: 0.30,
-                            rating: 0.10,
-                            amenitiesCount: 0.10,
-                            securityScore: 0.10
-                        },
-                        totalScore: 0.828,
-                        rank: 1,
-                        normalizationMethod: 'Min-Max Scaling',
-                        explanation: [
-                            `Điểm tiện nghi: ${room.avgAmenity?.toFixed(1) || 'N/A'}/5.0`,
-                            `Điểm an ninh: ${room.avgSecurity?.toFixed(1) || 'N/A'}/5.0`,
-                            `Giá thuê: ${room.priceVnd?.toLocaleString()}đ/tháng`,
-                            `Diện tích: ${room.areaSqm}m²`,
-                            'Khoảng cách đến trường: 1.2km (rất gần)'
-                        ]
+                    amenities: roomSource.amenities || [],
+                    distance: roomSource.distance,
+                    areaTypeName: roomSource.areaTypeName,
+                    roomType: roomSource.roomType || 'SINGLE',
+                    status: roomSource.status,
+                    rules: roomSource.rules || '',
+                    landlord: {
+                        id: roomSource.landlordUserId,
+                        phoneNumber: roomSource.landlordPhone
                     },
+                    landlordPhone: roomSource.landlordPhone,
+                    areaTypeName: roomSource.areaTypeName,
                     routeToSchool: {
-                        school: {
-                            name: 'Trường của bạn',
-                            lat: DEFAULT_COORDINATES.latitude + 0.001,
-                            lng: DEFAULT_COORDINATES.longitude + 0.002
-                        },
-                        distance: 1.2,
-                        geometry: [
-                            [room.latitude || DEFAULT_COORDINATES.latitude, room.longitude || DEFAULT_COORDINATES.longitude],
-                            [DEFAULT_COORDINATES.latitude + 0.001, DEFAULT_COORDINATES.longitude + 0.002]
-                        ]
+                        school: null,
+                        distance: roomSource.distance || 0,
+                        geometry: []
                     }
                 };
                 setRoomData(mappedRoom);
                 setSelectedSchool(mappedRoom.routeToSchool.school);
             } else {
-                message.error(response.message || 'Không thể tải thông tin phòng');
+                message.error('Không tìm thấy thông tin phòng từ danh sách.');
             }
-        } catch (error) {
-            console.error('Error fetching room detail:', error);
-            message.error('Có lỗi xảy ra khi tải thông tin phòng');
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, location.state]);
 
     if (loading) {
         return (
@@ -147,7 +132,41 @@ const RoomDetailPage = () => {
 
     const tabItems = [
         {
-            key: 'map',
+            key: 'room-map',
+            label: 'Bản đồ phòng trọ',
+            children: (
+                <div className="route-map-section">
+                    <div className="map-header">
+                        <h3 className="map-title">Vị trí phòng trọ</h3>
+                    </div>
+                    <div className="map-container" style={{ height: 360 }}>
+                        <MapContainer
+                            center={[roomData.location.lat, roomData.location.lng]}
+                            zoom={15}
+                            style={{ height: '100%', width: '100%' }}
+                            scrollWheelZoom={false}
+                        >
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            <Marker position={[roomData.location.lat, roomData.location.lng]}>
+                                <Popup>
+                                    <strong>{roomData.title}</strong>
+                                    <br />
+                                    {roomData.address}
+                                </Popup>
+                            </Marker>
+                        </MapContainer>
+                    </div>
+                    <div className="map-note">
+                        <p>Tọa độ: {roomData.location.lat}, {roomData.location.lng}</p>
+                    </div>
+                </div>
+            )
+        },
+        {
+            key: 'route-map',
             label: 'Bản đồ đường đi',
             children: (
                 <RouteMapSection
@@ -155,16 +174,6 @@ const RoomDetailPage = () => {
                     schoolLocation={selectedSchool}
                     routeGeometry={roomData.routeToSchool.geometry}
                     distance={roomData.routeToSchool.distance}
-                />
-            )
-        },
-        {
-            key: 'explanation',
-            label: 'Giải thích chuyên sâu',
-            children: (
-                <DecisionExplanation
-                    dssData={roomData.dssData}
-                    roomTitle={roomData.title}
                 />
             )
         }
@@ -194,7 +203,7 @@ const RoomDetailPage = () => {
                         <div className="right-column-scroll">
                             <div className="right-section">
                                 <Tabs
-                                    defaultActiveKey="map"
+                                    defaultActiveKey="room-map"
                                     items={tabItems}
                                     className="detail-tabs"
                                 />

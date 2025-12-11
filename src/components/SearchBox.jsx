@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Select, Button } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
-import { getAllAreaTypesApi } from '../util/api';
+import { getAllAreaTypesApi, getAllSchoolsApi } from '../util/api';
 import './SearchBox.css';
 
 const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
@@ -15,12 +15,12 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
         fetchAreaTypes();
     }, []);
 
-    const fetchSchools = async () => {
+    const fetchSchools = async (keyword = '') => {
         try {
-            const response = await getAllSchoolsApi();
+            const response = await getAllSchoolsApi(keyword);
 
-            if (response.code === '00' && response.data) {
-                const schoolOptions = response.data.map(school => ({
+            if (response.code === '00' && Array.isArray(response.data)) {
+                const schoolOptions = response.data.map((school) => ({
                     value: school.id,
                     label: school.name
                 }));
@@ -35,15 +35,13 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
         try {
             const response = await getAllAreaTypesApi();
 
-            if (response.code === '00' && response.data) {
-                // Map API response to Select options format
-                const areaOptions = response.data.map(area => ({
+            if (response.code === '00' && Array.isArray(response.data)) {
+                const areaOptions = response.data.map((area) => ({
                     value: area.id,
                     label: area.name
                 }));
                 setAreas(areaOptions);
             } else {
-                // Fallback to default areas
                 setAreas(getDefaultAreas());
             }
         } catch (error) {
@@ -55,7 +53,7 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
     const getDefaultAreas = () => [
         { value: 1, label: 'Gần trường' },
         { value: 2, label: 'Trung tâm' },
-        { value: 3, label: 'Ngoại thành' },
+        { value: 3, label: 'Ngoại thành' }
     ];
 
     const handleSearch = () => {
@@ -83,6 +81,7 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
                     options={schools}
                     value={selectedSchool}
                     onChange={setSelectedSchool}
+                    onSearch={fetchSchools}
                     onKeyPress={handleKeyPress}
                     allowClear
                     showSearch

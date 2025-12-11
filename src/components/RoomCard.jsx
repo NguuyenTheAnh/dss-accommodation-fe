@@ -40,7 +40,7 @@ const RoomCard = ({ room }) => {
     const displayDistance = distance || '';
 
     const handleCardClick = () => {
-        navigate(`/rooms/${id}`);
+        navigate(`/rooms/${id}`, { state: { room } });
     };
 
     return (

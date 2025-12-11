@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Slider, Select, Rate, Divider } from 'antd';
 import { FilterOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getAllAreaTypesApi } from '../util/api';
+import { getAllAreaTypesApi, getAllSchoolsApi } from '../util/api';
 import { ROOM_TYPE, ROOM_TYPE_LABELS } from '../util/constants';
 import './SidebarFilter.css';
 

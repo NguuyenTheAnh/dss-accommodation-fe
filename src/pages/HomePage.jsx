@@ -1,11 +1,73 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Row, Col, Spin, message } from 'antd';
+import { Row, Col, Spin } from 'antd';
 import SearchBox from '../components/SearchBox';
 import RoomCard from '../components/RoomCard';
 import FilterModal from '../components/FilterModal';
-import { getFeaturedRoomsApi } from '../util/api';
 import './HomePage.css';
+
+const MOCK_FEATURED_ROOMS = [
+    {
+        id: 'mock-1',
+        title: 'Studio sáng sủa gần Bách Khoa',
+        image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80',
+        price: '3.200.000',
+        area: '24',
+        location: 'Hai Ba Trung, Ha Noi',
+        rating: 4.8,
+        distance: '450m den truong'
+    },
+    {
+        id: 'mock-2',
+        title: 'Căn hộ mini có ban công',
+        image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80',
+        price: '3.800.000',
+        area: '28',
+        location: 'Dong Da, Ha Noi',
+        rating: 4.7,
+        distance: '750m den truong'
+    },
+    {
+        id: 'mock-3',
+        title: 'Phòng trọ đẹp trong khu dân trí',
+        image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+        price: '2.900.000',
+        area: '22',
+        location: 'Cau Giay, Ha Noi',
+        rating: 4.6,
+        distance: '1km den truong'
+    },
+    {
+        id: 'mock-4',
+        title: 'Phòng đơn thang máy, để xe riêng',
+        image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=900&q=80',
+        price: '3.500.000',
+        area: '26',
+        location: 'Thanh Xuan, Ha Noi',
+        rating: 4.9,
+        distance: '600m den truong'
+    },
+    {
+        id: 'mock-5',
+        title: 'Căn hộ 1 ngủ sang trọng',
+        image: 'https://plus.unsplash.com/premium_photo-1661879252375-7c1db1932572?auto=format&fit=crop&w=900&q=80',
+        price: '4.200.000',
+        area: '32',
+        location: 'Hoang Mai, Ha Noi',
+        rating: 4.8,
+        distance: '900m den truong'
+    },
+    {
+        id: 'mock-6',
+        title: 'Phòng trọ full đồ cho sinh viên',
+        image: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=900&q=80',
+        price: '2.700.000',
+        area: '20',
+        location: 'Nam Tu Liem, Ha Noi',
+        rating: 4.5,
+        distance: '1.3km den truong'
+    }
+];
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -15,37 +77,10 @@ const HomePage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchFeaturedRooms();
+        // Use mock data for featured rooms (BE chưa cung cấp API)
+        setSuggestedRooms(MOCK_FEATURED_ROOMS);
+        setLoading(false);
     }, []);
-
-    const fetchFeaturedRooms = async () => {
-        try {
-            setLoading(true);
-            const response = await getFeaturedRoomsApi();
-
-            if (response.code === '00') {
-                // Map API data to component format
-                const mappedRooms = response.data.map(room => ({
-                    id: room.id,
-                    image: room.roomCoverImageUrl,
-                    title: room.title,
-                    price: (room.priceVnd / 1000).toFixed(0) + '.000',
-                    area: room.areaSqm.toString(),
-                    location: room.address.split(',').slice(-2).join(',').trim(),
-                    rating: room.avgAmenity || room.avgSecurity || 4.5,
-                    distance: '500m \u0111\u1ebfn tr\u01b0\u1eddng'
-                }));
-                setSuggestedRooms(mappedRooms);
-            } else {
-                message.error(response.message || 'Không thể tải danh sách phòng');
-            }
-        } catch (error) {
-            console.error('Error fetching featured rooms:', error);
-            message.error('Có lỗi xảy ra khi tải danh sách phòng');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleSearch = (searchParams) => {
         console.log('Search params:', searchParams);

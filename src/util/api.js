@@ -85,6 +85,19 @@ const getAllAreaTypesApi = () => {
 }
 
 // ==========================================
+// SCHOOL APIs
+// ==========================================
+
+/**
+ * Get all schools
+ * @param {string} name - optional search keyword
+ */
+const getAllSchoolsApi = (name = "") => {
+    const URL_API = "/schools/all";
+    return axios.post(URL_API, { name });
+}
+
+// ==========================================
 // SURVEY APIs
 // ==========================================
 
@@ -229,6 +242,8 @@ export {
 
     // Area Type
     getAllAreaTypesApi,
+    // Schools
+    getAllSchoolsApi,
 
     // Survey
     getAllSurveysApi,

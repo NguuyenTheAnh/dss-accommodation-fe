@@ -42,7 +42,7 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     const displayAmenities = amenities || [];
 
     const handleCardClick = () => {
-        navigate(`/rooms/${id}`);
+        navigate(`/rooms/${id}`, { state: { room } });
     };
 
     return (

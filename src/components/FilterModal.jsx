@@ -1,53 +1,67 @@
-import { useState } from 'react';
-import { Modal, Slider, Select, Rate, Button } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
+import { Modal, Slider, Select, Button, Divider } from 'antd';
+import { CloseOutlined, ReloadOutlined } from '@ant-design/icons';
+import { getAllAreaTypesApi } from '../util/api';
+import { ROOM_TYPE, ROOM_TYPE_LABELS } from '../util/constants';
 import './FilterModal.css';
 
+const DEFAULT_FILTERS = {
+    priceRange: [1000000, 10000000],
+    distanceRange: [0, 5],
+    areaRange: [15, 50],
+    roomType: undefined,
+    areaTypeId: undefined,
+    amenityRange: [1, 5],
+    securityRange: [1, 5]
+};
+
+const roomTypeOptions = [
+    { value: ROOM_TYPE.SINGLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE] },
+    { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] },
+    { value: ROOM_TYPE.STUDIO, label: ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO] },
+    { value: ROOM_TYPE.APARTMENT, label: ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT] }
+];
+
+const formatPrice = (value) => `${(value / 1000000).toFixed(1)}tr`;
+
 const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
-    const [filters, setFilters] = useState({
-        priceRange: initialFilters.priceRange || [1000000, 10000000],
-        distance: initialFilters.distance || 5,
-        areaRange: initialFilters.areaRange || [15, 50],
-        rating: initialFilters.rating || 0,
-        roomType: initialFilters.roomType || undefined,
-        amenities: initialFilters.amenities || []
-    });
+    const [areaTypes, setAreaTypes] = useState([]);
+    const [filters, setFilters] = useState({ ...DEFAULT_FILTERS, ...initialFilters });
 
-    const roomTypes = [
-        { value: 'single', label: 'Phòng đơn' },
-        { value: 'double', label: 'Phòng đôi' },
-        { value: 'apartment', label: 'Chung cư mini' },
-        { value: 'house', label: 'Nhà nguyên căn' }
-    ];
+    useEffect(() => {
+        setFilters({ ...DEFAULT_FILTERS, ...initialFilters });
+    }, [initialFilters]);
 
-    const amenitiesList = [
-        { value: 'wifi', label: 'WiFi' },
-        { value: 'parking', label: 'Chỗ đậu xe' },
-        { value: 'ac', label: 'Điều hòa' },
-        { value: 'washing', label: 'Máy giặt' },
-        { value: 'kitchen', label: 'Bếp' },
-        { value: 'security', label: 'An ninh 24/7' }
-    ];
+    useEffect(() => {
+        fetchAreaTypes();
+    }, []);
 
-    const handleApply = () => {
-        onApply(filters);
-        onClose();
+    const fetchAreaTypes = async () => {
+        try {
+            const response = await getAllAreaTypesApi();
+            if (response.code === '00' && Array.isArray(response.data)) {
+                const options = response.data.map((area) => ({
+                    value: area.id,
+                    label: area.name
+                }));
+                setAreaTypes(options);
+            }
+        } catch (error) {
+            console.error('Error fetching area types:', error);
+        }
+    };
+
+    const handleUpdate = (key, value) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
     };
 
     const handleReset = () => {
-        const resetFilters = {
-            priceRange: [1000000, 10000000],
-            distance: 5,
-            areaRange: [15, 50],
-            rating: 0,
-            roomType: undefined,
-            amenities: []
-        };
-        setFilters(resetFilters);
+        setFilters(DEFAULT_FILTERS);
     };
 
-    const formatPrice = (value) => {
-        return `${(value / 1000000).toFixed(1)}tr`;
+    const handleApply = () => {
+        onApply?.(filters);
+        onClose?.();
     };
 
     return (
@@ -61,12 +75,11 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
             open={visible}
             onCancel={onClose}
             footer={null}
-            width={600}
+            width={640}
             closeIcon={null}
             className="filter-modal"
         >
             <div className="filter-modal-content">
-                {/* Price Range */}
                 <div className="filter-section">
                     <label className="filter-label">Khoảng giá (VNĐ/tháng)</label>
                     <Slider
@@ -75,7 +88,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
                         max={20000000}
                         step={500000}
                         value={filters.priceRange}
-                        onChange={(value) => setFilters({ ...filters, priceRange: value })}
+                        onChange={(value) => handleUpdate('priceRange', value)}
                         tooltip={{ formatter: formatPrice }}
                         className="custom-slider"
                     />
@@ -84,21 +97,27 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
                     </div>
                 </div>
 
-                {/* Distance */}
+                <Divider />
+
                 <div className="filter-section">
                     <label className="filter-label">Khoảng cách đến trường (km)</label>
                     <Slider
+                        range
                         min={0}
                         max={10}
                         step={0.5}
-                        value={filters.distance}
-                        onChange={(value) => setFilters({ ...filters, distance: value })}
+                        value={filters.distanceRange}
+                        onChange={(value) => handleUpdate('distanceRange', value)}
                         marks={{ 0: '0km', 5: '5km', 10: '10km' }}
                         className="custom-slider"
                     />
+                    <div className="range-display">
+                        {filters.distanceRange[0]}km - {filters.distanceRange[1]}km
+                    </div>
                 </div>
 
-                {/* Area Range */}
+                <Divider />
+
                 <div className="filter-section">
                     <label className="filter-label">Diện tích (m²)</label>
                     <Slider
@@ -107,7 +126,7 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
                         max={100}
                         step={5}
                         value={filters.areaRange}
-                        onChange={(value) => setFilters({ ...filters, areaRange: value })}
+                        onChange={(value) => handleUpdate('areaRange', value)}
                         className="custom-slider"
                     />
                     <div className="range-display">
@@ -115,46 +134,76 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
                     </div>
                 </div>
 
-                {/* Rating */}
-                <div className="filter-section">
-                    <label className="filter-label">Đánh giá tối thiểu</label>
-                    <Rate
-                        value={filters.rating}
-                        onChange={(value) => setFilters({ ...filters, rating: value })}
-                        className="custom-rate"
-                    />
-                </div>
+                <Divider />
 
-                {/* Room Type */}
                 <div className="filter-section">
                     <label className="filter-label">Loại phòng</label>
                     <Select
                         placeholder="Chọn loại phòng"
-                        options={roomTypes}
+                        options={roomTypeOptions}
                         value={filters.roomType}
-                        onChange={(value) => setFilters({ ...filters, roomType: value })}
+                        onChange={(value) => handleUpdate('roomType', value)}
                         className="filter-select"
                         allowClear
                     />
                 </div>
 
-                {/* Amenities */}
+                <Divider />
+
+                {areaTypes.length > 0 && (
+                    <div className="filter-section">
+                        <label className="filter-label">Loại khu vực</label>
+                        <Select
+                            placeholder="Chọn khu vực"
+                            options={areaTypes}
+                            value={filters.areaTypeId}
+                            onChange={(value) => handleUpdate('areaTypeId', value)}
+                            className="filter-select"
+                            allowClear
+                        />
+                    </div>
+                )}
+
+                {areaTypes.length > 0 && <Divider />}
+
                 <div className="filter-section">
-                    <label className="filter-label">Tiện nghi</label>
-                    <Select
-                        mode="multiple"
-                        placeholder="Chọn tiện nghi"
-                        options={amenitiesList}
-                        value={filters.amenities}
-                        onChange={(value) => setFilters({ ...filters, amenities: value })}
-                        className="filter-select"
-                        maxTagCount="responsive"
+                    <label className="filter-label">Mức độ tiện nghi (1-5)</label>
+                    <Slider
+                        range
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        value={filters.amenityRange}
+                        onChange={(value) => handleUpdate('amenityRange', value)}
+                        marks={{ 1: '1', 3: '3', 5: '5' }}
+                        className="custom-slider"
                     />
+                    <div className="range-display">
+                        {filters.amenityRange[0].toFixed(1)} - {filters.amenityRange[1].toFixed(1)}
+                    </div>
                 </div>
 
-                {/* Action Buttons */}
+                <Divider />
+
+                <div className="filter-section">
+                    <label className="filter-label">Mức độ an toàn (1-5)</label>
+                    <Slider
+                        range
+                        min={1}
+                        max={5}
+                        step={0.1}
+                        value={filters.securityRange}
+                        onChange={(value) => handleUpdate('securityRange', value)}
+                        marks={{ 1: '1', 3: '3', 5: '5' }}
+                        className="custom-slider"
+                    />
+                    <div className="range-display">
+                        {filters.securityRange[0].toFixed(1)} - {filters.securityRange[1].toFixed(1)}
+                    </div>
+                </div>
+
                 <div className="filter-actions">
-                    <Button onClick={handleReset} className="reset-button">
+                    <Button onClick={handleReset} className="reset-button" icon={<ReloadOutlined />}>
                         Đặt lại
                     </Button>
                     <Button type="primary" onClick={handleApply} className="apply-button">

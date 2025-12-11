@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, InputNumber, message, Tag, Select } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import RoomDetailManagement from '../components/RoomDetailManagement';
-import { getAllRoomsApi, deleteRoomsApi, createRoomApi, getAllAreaTypesApi, updateRoomApi, getRoomDetailApi } from '../util/api';
+import { getAllRoomsApi, deleteRoomsApi, createRoomApi, getAllAreaTypesApi, updateRoomApi } from '../util/api';
 import './RoomManagementPage.css';
 
 const { Option } = Select;
@@ -107,21 +107,8 @@ const RoomManagementPage = () => {
     };
 
     const openRoomDetail = async (record, modeType) => {
-        setLoading(true);
-        try {
-            const response = await getRoomDetailApi(record.id);
-            if (response.code === '00' && response.data) {
-                setSelectedRoom(response.data);
-                setDetailMode(modeType);
-            } else {
-                message.error(response.message || 'Không thể tải thông tin phòng');
-            }
-        } catch (error) {
-            console.error('Error loading room detail:', error);
-            message.error('Có lỗi khi tải thông tin phòng');
-        } finally {
-            setLoading(false);
-        }
+        setSelectedRoom(record);
+        setDetailMode(modeType);
     };
 
     const handleView = (record) => openRoomDetail(record, 'view');

@@ -1,0 +1,80 @@
+POST {{beURL}} /rooms/all
+req body
+{
+  "pageNumber": 0,
+  "pageSize": 20,
+
+  "schoolId":1,
+
+  // thêm filter
+  "fromPrice": 0,
+  "toPrice": 10000000,
+  
+  "fromDistance": 0,
+  "toDistance": 10000,
+  
+  "fromArea": 0,
+  "toArea": 100,
+  
+  "fromSecurityPoints": 0,
+  "toSecurityPoints": 5,
+  
+  "fromAmenityPoints": 0,
+  "toAmenityPoints": 5,
+  
+  "areaTypeIds": [1,2],
+  "roomTypes": ["SINGLE"]
+}
+
+res
+{
+  "code": "00",
+  "message": null,
+  "data": {
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalElements": 6,
+    "totalPages": 1,
+
+    "rowIdsInMatrix":[1,3,2],
+    "initMatrix": [
+      [0.85, 0.60, 0.90,0.15,0.20],
+      [0.75, 0.80, 0.88,0.15,0.20],
+      [0.70, 0.55, 0.78,0.15,0.20]
+    ],
+    
+    "data": [
+      {
+        "id": 1,
+        "landlordUserId": 1,
+
+        "landlordPhone": "0123",
+        
+        "areaTypeId": 1,
+        "areaTypeName": "abc",
+        "title": "abc",
+        "description": "abc",
+        "address": "abc",
+        "latitude": 10.000001,
+        "longitude": 10.000001,
+        "priceVnd": 10000,
+        "areaSqm": 10.01,
+        "roomType": "SINGLE",
+        "status": "AVAILABLE",
+        "avgAmenity": 4.8,
+        "avgSecurity": 3.4,
+        "roomCoverImageId": 1,
+        "roomCoverImageUrl": "abc",
+
+        "roomNotCoverImages": [
+          {
+            "roomNotCoverImageId": 1,
+            "roomNotCoverImageUrl": "abc"
+          }
+        ],
+        "distance":25.5
+      }
+    ]
+  }
+}
+

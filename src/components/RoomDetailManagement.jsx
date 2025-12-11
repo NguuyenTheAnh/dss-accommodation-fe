@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Tabs, Tag, Card, Divider, Row, Col, Image, Rate, message, List, Form, Input, InputNumber, Select, Upload } from 'antd';
-import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined, UploadOutlined, DeleteFilled } from '@ant-design/icons';
-import { getRoomDetailApi, getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi, getAllSurveysApi } from '../util/api';
+import { ArrowLeftOutlined, EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, SaveOutlined, UploadOutlined, DeleteFilled, PhoneOutlined, AimOutlined } from '@ant-design/icons';
+import { getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi, getAllSurveysApi } from '../util/api';
 import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 import './RoomDetailManagement.css';
 
@@ -49,26 +49,25 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     useEffect(() => {
         fetchAreaTypes();
-        fetchSurveyData(); // Lấy câu hỏi khảo sát cho tất cả mode
-        if (room?.id) {
-            fetchRoomDetail();
-        } else if (isAddMode) {
-            // Chế độ thêm mới - sử dụng dữ liệu từ room prop
+        fetchSurveyData();
+        if (room) {
             setRoomDetail(room);
-            form.setFieldsValue({
-                title: room.title || '',
-                description: room.description || '',
-                address: room.address || '',
-                latitude: room.latitude || 21.0285,
-                longitude: room.longitude || 105.8542,
-                priceVnd: room.priceVnd || 0,
-                areaSqm: room.areaSqm || 0,
-                roomType: room.roomType || 'SINGLE',
-                status: room.status || 'AVAILABLE',
-                areaTypeId: room.areaTypeId || 1
-            });
-            // Khởi tạo giá trị mặc định cho survey form
-            initializeSurveyForm();
+            setSurveyAnswers(room.surveyAnswers || []);
+            if (isAddMode || isEditMode) {
+                form.setFieldsValue({
+                    title: room.title || '',
+                    description: room.description || '',
+                    address: room.address || '',
+                    latitude: room.latitude || 21.0285,
+                    longitude: room.longitude || 105.8542,
+                    priceVnd: room.priceVnd || 0,
+                    areaSqm: room.areaSqm || 0,
+                    roomType: room.roomType || 'SINGLE',
+                    status: room.status || 'AVAILABLE',
+                    areaTypeId: room.areaTypeId || 1
+                });
+                initializeSurveyForm();
+            }
         }
     }, [room?.id, mode]);
 
@@ -83,46 +82,6 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
         }
     };
 
-    const fetchRoomDetail = async () => {
-        try {
-            const response = await getRoomDetailApi(room.id);
-
-            if (response.code === '00' && response.data) {
-                const detail = response.data;
-                setRoomDetail(detail);
-                setSurveyAnswers(detail.surveyAnswers || []);
-
-                // Set form values cho chế độ edit
-                if (isEditMode) {
-                    form.setFieldsValue({
-                        title: detail.title,
-                        description: detail.description,
-                        address: detail.address,
-                        latitude: detail.latitude,
-                        longitude: detail.longitude,
-                        priceVnd: detail.priceVnd,
-                        areaSqm: detail.areaSqm,
-                        roomType: detail.roomType,
-                        status: detail.status,
-                        areaTypeId: detail.areaTypeId
-                    });
-
-                    if (detail.surveyAnswers?.length) {
-                        const surveyValues = {};
-                        detail.surveyAnswers.forEach(answer => {
-                            surveyValues[`question_${answer.surveyQuestionId}`] = answer.point;
-                        });
-                        surveyForm.setFieldsValue(surveyValues);
-                    }
-                }
-            } else {
-                message.error(response.message || 'Không thể tải chi tiết phòng');
-            }
-        } catch (error) {
-            console.error('Error fetching room detail:', error);
-            message.error('Không thể tải chi tiết phòng');
-        }
-    };
 
     const fetchSurveyData = async () => {
         try {

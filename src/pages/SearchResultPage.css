@@ -41,6 +41,66 @@
     margin: 0;
 }
 
+/* Filter summary pills (align with HomePage filter) */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f3fbf6;
+    color: var(--primary-green);
+    border: 1px solid rgba(13, 177, 75, 0.18);
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.filter-pill .pill-key {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.filter-pill .pill-value {
+    color: var(--primary-green);
+}
+
+/* DSS/meta cards for matrix data */
+.matrix-meta {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.matrix-card {
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.matrix-card-title {
+    margin: 0 0 6px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.matrix-card-sub {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
 .results-list {
     display: flex;
     flex-direction: column;

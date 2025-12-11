@@ -1,5 +1,6 @@
 import { Image, Tag, Rate, Divider } from 'antd';
-import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, PhoneOutlined, AimOutlined } from '@ant-design/icons';
+import { ROOM_TYPE_LABELS } from '../util/constants';
 import './RoomInfoSection.css';
 
 const RoomInfoSection = ({ roomData }) => {
@@ -9,13 +10,24 @@ const RoomInfoSection = ({ roomData }) => {
         price,
         area,
         address,
-        images,
+        images = [],
         rating,
         reviewCount,
         amenities = [],
         roomType,
-        rules
+        rules,
+        status,
+        avgAmenity,
+        avgSecurity,
+        distance,
+        areaTypeName,
+        landlordPhone
     } = roomData || {};
+
+    const safeImages = images.length > 0 ? images : ['https://via.placeholder.com/600x400'];
+    const displayRating = avgAmenity || avgSecurity || rating || 0;
+    const displayRoomType = ROOM_TYPE_LABELS[roomType] || roomType || 'N/A';
+    const displayStatus = status === 'AVAILABLE' ? 'Còn trống' : 'Đã thuê';
 
     return (
         <div className="room-info-section">
@@ -24,13 +36,13 @@ const RoomInfoSection = ({ roomData }) => {
                 <Image.PreviewGroup>
                     <div className="main-image">
                         <Image
-                            src={images[0]}
+                            src={safeImages[0]}
                             alt={title}
                             className="primary-image"
                         />
                     </div>
                     <div className="thumbnail-images">
-                        {images.slice(1, 3).map((img, index) => (
+                        {safeImages.slice(1, 3).map((img, index) => (
                             <Image
                                 key={index}
                                 src={img}
@@ -38,15 +50,15 @@ const RoomInfoSection = ({ roomData }) => {
                                 className="thumbnail-image"
                             />
                         ))}
-                        {images.length > 3 && (
+                        {safeImages.length > 3 && (
                             <div className="more-images-overlay">
                                 <Image
-                                    src={images[3]}
+                                    src={safeImages[3]}
                                     alt={`${title} - more`}
                                     className="thumbnail-image"
                                 />
                                 <div className="overlay-text">
-                                    +{images.length - 3} ảnh
+                                    +{safeImages.length - 3} ảnh
                                 </div>
                             </div>
                         )}
@@ -56,11 +68,14 @@ const RoomInfoSection = ({ roomData }) => {
 
             {/* Title & Rating */}
             <div className="room-header">
-                <h1 className="room-title">{title}</h1>
+                <div className="room-title-wrap">
+                    <h1 className="room-title">{title}</h1>
+                    <Tag color={status === 'AVAILABLE' ? 'green' : 'red'}>{displayStatus}</Tag>
+                </div>
                 <div className="room-rating">
-                    <Rate disabled defaultValue={rating} allowHalf />
+                    <Rate disabled defaultValue={displayRating} allowHalf />
                     <span className="rating-text">
-                        {rating} ({reviewCount} đánh giá)
+                        {displayRating} ({reviewCount} đánh giá)
                     </span>
                 </div>
             </div>
@@ -70,7 +85,7 @@ const RoomInfoSection = ({ roomData }) => {
                 <div className="info-item price-item">
                     <DollarOutlined className="info-icon" />
                     <div>
-                        <span className="price-amount">{price.toLocaleString()}đ</span>
+                        <span className="price-amount">{price?.toLocaleString()}đ</span>
                         <span className="price-period">/tháng</span>
                     </div>
                 </div>
@@ -80,7 +95,7 @@ const RoomInfoSection = ({ roomData }) => {
                 </div>
                 <div className="info-item">
                     <HomeOutlined className="info-icon" />
-                    <span className="info-text">{roomType}</span>
+                    <span className="info-text">{displayRoomType}</span>
                 </div>
             </div>
 
@@ -109,11 +124,48 @@ const RoomInfoSection = ({ roomData }) => {
             <div className="room-section">
                 <h3 className="section-title">Tiện nghi</h3>
                 <div className="amenities-list">
-                    {amenities.map((amenity, index) => (
-                        <Tag key={index} className="amenity-tag-large">
-                            {amenity}
-                        </Tag>
-                    ))}
+                    {amenities.length > 0 ? (
+                        amenities.map((amenity, index) => (
+                            <Tag key={index} className="amenity-tag-large">
+                                {amenity}
+                            </Tag>
+                        ))
+                    ) : (
+                        <span className="text-muted">Chưa có thông tin tiện nghi</span>
+                    )}
+                </div>
+            </div>
+
+            <Divider />
+
+            {/* Extra Info */}
+            <div className="room-section">
+                <h3 className="section-title">Thông tin thêm</h3>
+                <div className="info-grid">
+                    <div className="info-row">
+                        <span className="info-label">Khoảng cách:</span>
+                        <span className="info-value">{distance ?? 'N/A'} km</span>
+                    </div>
+                    <div className="info-row">
+                        <span className="info-label">Loại khu vực:</span>
+                        <span className="info-value">{areaTypeName || 'N/A'}</span>
+                    </div>
+                    <div className="info-row">
+                        <span className="info-label">Điểm tiện nghi:</span>
+                        <span className="info-value">{avgAmenity?.toFixed(1) || 'N/A'}/5</span>
+                    </div>
+                    <div className="info-row">
+                        <span className="info-label">Điểm an ninh:</span>
+                        <span className="info-value">{avgSecurity?.toFixed(1) || 'N/A'}/5</span>
+                    </div>
+                    <div className="info-row">
+                        <span className="info-label"><PhoneOutlined /> Liên hệ:</span>
+                        <span className="info-value">{landlordPhone || 'N/A'}</span>
+                    </div>
+                    <div className="info-row">
+                        <span className="info-label"><AimOutlined /> Trạng thái:</span>
+                        <span className="info-value">{displayStatus}</span>
+                    </div>
                 </div>
             </div>
 
