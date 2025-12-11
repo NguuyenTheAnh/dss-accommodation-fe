@@ -1,4 +1,4 @@
-import { Image, Tag, Rate, Divider } from 'antd';
+import { Image, Tag, Divider } from 'antd';
 import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, HomeOutlined, PhoneOutlined, AimOutlined } from '@ant-design/icons';
 import { ROOM_TYPE_LABELS } from '../util/constants';
 import './RoomInfoSection.css';
@@ -11,11 +11,7 @@ const RoomInfoSection = ({ roomData }) => {
         area,
         address,
         images = [],
-        rating,
-        reviewCount,
-        amenities = [],
         roomType,
-        rules,
         status,
         avgAmenity,
         avgSecurity,
@@ -25,7 +21,6 @@ const RoomInfoSection = ({ roomData }) => {
     } = roomData || {};
 
     const safeImages = images.length > 0 ? images : ['https://via.placeholder.com/600x400'];
-    const displayRating = avgAmenity || avgSecurity || rating || 0;
     const displayRoomType = ROOM_TYPE_LABELS[roomType] || roomType || 'N/A';
     const displayStatus = status === 'AVAILABLE' ? 'Còn trống' : 'Đã thuê';
 
@@ -72,12 +67,6 @@ const RoomInfoSection = ({ roomData }) => {
                     <h1 className="room-title">{title}</h1>
                     <Tag color={status === 'AVAILABLE' ? 'green' : 'red'}>{displayStatus}</Tag>
                 </div>
-                <div className="room-rating">
-                    <Rate disabled defaultValue={displayRating} allowHalf />
-                    <span className="rating-text">
-                        {displayRating} ({reviewCount} đánh giá)
-                    </span>
-                </div>
             </div>
 
             {/* Price & Area */}
@@ -120,24 +109,6 @@ const RoomInfoSection = ({ roomData }) => {
 
             <Divider />
 
-            {/* Amenities */}
-            <div className="room-section">
-                <h3 className="section-title">Tiện nghi</h3>
-                <div className="amenities-list">
-                    {amenities.length > 0 ? (
-                        amenities.map((amenity, index) => (
-                            <Tag key={index} className="amenity-tag-large">
-                                {amenity}
-                            </Tag>
-                        ))
-                    ) : (
-                        <span className="text-muted">Chưa có thông tin tiện nghi</span>
-                    )}
-                </div>
-            </div>
-
-            <Divider />
-
             {/* Extra Info */}
             <div className="room-section">
                 <h3 className="section-title">Thông tin thêm</h3>
@@ -167,14 +138,6 @@ const RoomInfoSection = ({ roomData }) => {
                         <span className="info-value">{displayStatus}</span>
                     </div>
                 </div>
-            </div>
-
-            <Divider />
-
-            {/* Rules */}
-            <div className="room-section">
-                <h3 className="section-title">Quy định</h3>
-                <p className="room-rules">{rules}</p>
             </div>
         </div>
     );
