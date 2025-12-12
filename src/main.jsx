@@ -17,6 +17,8 @@ import ManagementLayout from './components/ManagementLayout.jsx';
 import RoomManagementPage from './pages/RoomManagementPage.jsx';
 import SurveyQuestionsPage from './pages/SurveyQuestionsPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import MatrixFlowPage from './pages/MatrixFlowPage.jsx';
+import TOPSISResultPage from './pages/TOPSISResultPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -34,6 +36,14 @@ const router = createBrowserRouter([
       {
         path: "rooms/:id",
         element: <RoomDetailPage />
+      },
+      {
+        path: "matrix-flow",
+        element: <MatrixFlowPage />
+      },
+      {
+        path: "topsis-result",
+        element: <TOPSISResultPage />
       },
     ]
   },

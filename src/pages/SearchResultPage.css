@@ -20,6 +20,17 @@
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.results-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .results-title {
@@ -39,6 +50,10 @@
     font-size: 13px;
     color: var(--text-secondary);
     margin: 0;
+}
+
+.topsis-button {
+    margin-left: auto;
 }
 
 /* Filter summary pills (align with HomePage filter) */

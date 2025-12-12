@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Row, Col, Empty, Spin, message } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Row, Col, Empty, Spin, message, Button } from 'antd';
 import RoomCardHorizontal from '../components/RoomCardHorizontal';
 import SidebarFilter from '../components/SidebarFilter';
 import CustomPagination from '../components/CustomPagination';
@@ -9,6 +9,7 @@ import './SearchResultPage.css';
 
 const SearchResultPage = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [filters, setFilters] = useState({
         schoolId: undefined,
         priceRange: [1000000, 10000000],
@@ -24,6 +25,7 @@ const SearchResultPage = () => {
     const [currentRooms, setCurrentRooms] = useState([]);
     const [initMatrix, setInitMatrix] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [topsisLoading, setTopsisLoading] = useState(false);
     const pageSize = 10;
 
     useEffect(() => {
@@ -104,7 +106,18 @@ const SearchResultPage = () => {
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-    }; return (
+    };
+
+    const handleTopsis = () => {
+        if (topsisLoading) return;
+        setTopsisLoading(true);
+        setTimeout(() => {
+            navigate('/matrix-flow', { state: { initMatrix } });
+            setTopsisLoading(false);
+        }, 5000);
+    };
+
+    return (
         <div className="search-result-page">
             <div className="container">
                 {/* Main Content */}
@@ -123,15 +136,25 @@ const SearchResultPage = () => {
                         <Col xs={24} lg={17} xl={18}>
                             <div className="results-section">
                                 <div className="results-header">
-                                    <h2 className="results-title">
-                                        Tìm thấy <span className="text-primary">{totalRooms}</span> phòng trọ
-                                    </h2>
-                                    <p className="results-count">
-                                        Hiển thị {startIndex + 1}-{Math.min(endIndex, totalRooms)} của {totalRooms} kết quả
-                                    </p>
-                                    <p className="results-subtitle">
-                                        Sắp xếp theo: Phù hợp nhất
-                                    </p>
+                                    <div className="results-header-left">
+                                        <h2 className="results-title">
+                                            Tìm thấy <span className="text-primary">{totalRooms}</span> phòng trọ
+                                        </h2>
+                                        <p className="results-count">
+                                            Hiển thị {startIndex + 1}-{Math.min(endIndex, totalRooms)} của {totalRooms} kết quả
+                                        </p>
+                                        <p className="results-subtitle">
+                                            Sắp xếp theo: Phù hợp nhất
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="primary"
+                                        className="topsis-button"
+                                        loading={topsisLoading}
+                                        onClick={handleTopsis}
+                                    >
+                                        Xếp hạng TOPSIS
+                                    </Button>
                                 </div>
 
                                 {loading ? (
