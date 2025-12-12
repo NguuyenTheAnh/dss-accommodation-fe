@@ -200,6 +200,35 @@ const getFeaturedRoomsApi = () => {
     return axios.post(URL_API, {});
 }
 
+/**
+ * DSS Decision Table
+ * @param {Array<Array<number>>} initMatrix - 2D array of normalized values
+ * @param {object} filter - same filter object the user applied in search
+ */
+const getDecisionTableApi = (initMatrix = [], filter = {}) => {
+    const URL_API = "/dss/decision-table";
+    return axios.post(URL_API, { initMatrix, filter });
+}
+
+/**
+ * Normalize decision table (R matrix)
+ * @param {Array<Array<number>>} xMatrix
+ */
+const getNormalizeDecisionTableApi = (xMatrix = []) => {
+    const URL_API = "/dss/normalize-decision-table";
+    return axios.post(URL_API, { xMatrix });
+}
+
+/**
+ * Weight calculation (V matrix)
+ * @param {number[]} weights
+ * @param {Array<Array<number>>} rMatrix
+ */
+const getWeightCalculateApi = (weights = [], rMatrix = []) => {
+    const URL_API = "/dss/weight-caculate";
+    return axios.post(URL_API, { weights, rMatrix });
+}
+
 const getRoomRouteMapApi = (schoolId, roomId) => {
     const URL_API = "/rooms/view-map";
     return axios.post(URL_API, { schoolId, roomId });
@@ -268,6 +297,9 @@ export {
     getFeaturedRoomsApi,
     getPublicRoomDetailApi,
     getRoomRouteMapApi,
+    getDecisionTableApi,
+    getNormalizeDecisionTableApi,
+    getWeightCalculateApi,
 
     // Legacy
     createUserApi,
