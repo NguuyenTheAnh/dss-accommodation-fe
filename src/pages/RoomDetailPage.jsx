@@ -4,6 +4,7 @@ import { Row, Col, Spin, Button, Tabs, message } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import RoomInfoSection from '../components/RoomInfoSection';
 import RouteMapSection from '../components/RouteMapSection';
+import { getRoomRouteMapApi } from '../util/api';
 import { DEFAULT_COORDINATES } from '../util/constants';
 import './RoomDetailPage.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -25,6 +26,7 @@ const RoomDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [roomData, setRoomData] = useState(null);
     const [selectedSchool, setSelectedSchool] = useState(null);
+    const [routeData, setRouteData] = useState(null);
 
     const buildImageUrl = (url) => {
         if (!url) return url;
@@ -172,12 +174,43 @@ const RoomDetailPage = () => {
                 <RouteMapSection
                     roomLocation={roomData.location}
                     schoolLocation={selectedSchool}
-                    routeGeometry={roomData.routeToSchool.geometry}
-                    distance={roomData.routeToSchool.distance}
+                    routeGeometry={routeData?.geometry || roomData.routeToSchool.geometry}
+                    distance={routeData?.distance || roomData.routeToSchool.distance}
                 />
             )
         }
     ];
+
+    const handleTabChange = async (key) => {
+        if (key === 'route-map' && roomData) {
+            try {
+                const schoolId = (() => {
+                    try {
+                        return Number(localStorage.getItem('selectedSchoolId')) || null;
+                    } catch (e) {
+                        return null;
+                    }
+                })();
+                if (!schoolId) {
+                    message.warning('Vui lòng chọn trường trước khi xem bản đồ đường đi.');
+                    return;
+                }
+                const response = await getRoomRouteMapApi(schoolId, roomData.id);
+                if (response.code === '00' && response.data) {
+                    const geometry = (response.data.geometry || []).map((coords) => [coords[1], coords[0]]);
+                    setRouteData({
+                        distance: response.data.distance,
+                        geometry
+                    });
+                } else {
+                    message.error(response.message || 'Không lấy được lộ trình.');
+                }
+            } catch (error) {
+                console.error('Error fetching route map:', error);
+                message.error('Không lấy được lộ trình.');
+            }
+        }
+    };
 
     return (
         <div className="room-detail-page">
@@ -206,6 +239,7 @@ const RoomDetailPage = () => {
                                     defaultActiveKey="room-map"
                                     items={tabItems}
                                     className="detail-tabs"
+                                    onChange={handleTabChange}
                                 />
                             </div>
                         </div>

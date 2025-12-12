@@ -200,6 +200,11 @@ const getFeaturedRoomsApi = () => {
     return axios.post(URL_API, {});
 }
 
+const getRoomRouteMapApi = (schoolId, roomId) => {
+    const URL_API = "/rooms/view-map";
+    return axios.post(URL_API, { schoolId, roomId });
+}
+
 /**
  * Get public room detail (Public)
  * @param {number} roomId 
@@ -262,6 +267,7 @@ export {
     searchRoomsApi,
     getFeaturedRoomsApi,
     getPublicRoomDetailApi,
+    getRoomRouteMapApi,
 
     // Legacy
     createUserApi,

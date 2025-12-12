@@ -22,6 +22,7 @@ const SearchResultPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalRooms, setTotalRooms] = useState(0);
     const [currentRooms, setCurrentRooms] = useState([]);
+    const [initMatrix, setInitMatrix] = useState([]);
     const [loading, setLoading] = useState(false);
     const pageSize = 10;
 
@@ -43,10 +44,13 @@ const SearchResultPage = () => {
 
             if (response.code === '00' && response.data) {
                 const roomsData = response.data.data || [];
+                const matrixData = response.data.initMatrix || [];
                 setCurrentRooms(roomsData);
                 setTotalRooms(response.data.totalElements || 0);
+                setInitMatrix(matrixData);
                 try {
                     localStorage.setItem('roomsListCache', JSON.stringify(roomsData));
+                    localStorage.setItem('roomsInitMatrix', JSON.stringify(matrixData));
                 } catch (e) {
                     console.warn('Cannot cache rooms list', e);
                 }

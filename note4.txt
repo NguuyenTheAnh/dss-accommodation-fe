@@ -1,29 +1,8 @@
-POST {{beURL}} /rooms/all
+POST {{beURL}} /rooms/view-map
 req body
 {
-  "pageNumber": 0,
-  "pageSize": 20,
-
   "schoolId":1,
-
-  // thêm filter
-  "fromPrice": 0,
-  "toPrice": 10000000,
-  
-  "fromDistance": 0,
-  "toDistance": 10000,
-  
-  "fromArea": 0,
-  "toArea": 100,
-  
-  "fromSecurityPoints": 0,
-  "toSecurityPoints": 5,
-  
-  "fromAmenityPoints": 0,
-  "toAmenityPoints": 5,
-  
-  "areaTypeIds": [1,2],
-  "roomTypes": ["SINGLE"]
+  "roomId":1
 }
 
 res

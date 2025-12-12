@@ -65,6 +65,16 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
         }
     };
 
+    useEffect(() => {
+        if (selectedSchool) {
+            try {
+                localStorage.setItem('selectedSchoolId', selectedSchool);
+            } catch (e) {
+                console.warn('Cannot persist selected school', e);
+            }
+        }
+    }, [selectedSchool]);
+
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleSearch();
@@ -82,6 +92,9 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
                     value={selectedSchool}
                     onChange={setSelectedSchool}
                     onSearch={fetchSchools}
+                    onDropdownVisibleChange={(open) => {
+                        if (open) fetchSchools('');
+                    }}
                     onKeyPress={handleKeyPress}
                     allowClear
                     showSearch
