@@ -1,16 +1,14 @@
 // Room Type Enum
 export const ROOM_TYPE = {
     SINGLE: 'SINGLE',
+    DOUBLE: 'DOUBLE',
     SHARED: 'SHARED',
-    STUDIO: 'STUDIO',
-    APARTMENT: 'APARTMENT'
 };
 
 export const ROOM_TYPE_LABELS = {
     [ROOM_TYPE.SINGLE]: 'Phòng đơn',
+    [ROOM_TYPE.DOUBLE]: 'Phòng đôi',
     [ROOM_TYPE.SHARED]: 'Phòng chia sẻ',
-    [ROOM_TYPE.STUDIO]: 'Studio',
-    [ROOM_TYPE.APARTMENT]: 'Chung cư'
 };
 
 // Room Status Enum

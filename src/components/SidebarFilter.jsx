@@ -20,7 +20,7 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
 
             if (response.code === '00' && response.data) {
                 const schoolOptions = response.data.map(school => ({
-                    value: school.id,
+                    value: Number(school.id),
                     label: school.name
                 }));
                 setSchools(schoolOptions);
@@ -36,10 +36,10 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
 
             if (response.code === '00' && response.data) {
                 const areaOptions = response.data.map(area => ({
-                    value: area.id,
+                    value: Number(area.id),
                     label: area.name
                 }));
-                setAreaTypes(areaOptions);
+                setAreaTypes([{ value: null, label: 'Tất cả' }, ...areaOptions]);
             }
         } catch (error) {
             console.error('Error fetching area types:', error);
@@ -47,10 +47,10 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
     };
 
     const roomTypes = [
+        { value: null, label: 'Tất cả' },
         { value: ROOM_TYPE.SINGLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE] },
-        { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] },
-        { value: ROOM_TYPE.STUDIO, label: ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO] },
-        { value: ROOM_TYPE.APARTMENT, label: ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT] }
+        { value: ROOM_TYPE.DOUBLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.DOUBLE] },
+        { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] }
     ];
 
     const amenitiesList = [

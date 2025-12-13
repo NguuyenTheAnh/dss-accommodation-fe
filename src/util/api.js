@@ -26,14 +26,49 @@ const registerApi = (userData) => {
 // ROOM APIs - Admin/Management
 // ==========================================
 
+const buildRoomSearchPayload = ({
+    pageNumber = 0,
+    pageSize = 20,
+    schoolId,
+    fromPrice = 0,
+    toPrice = 10000000,
+    fromDistance = 0,
+    toDistance = 10000,
+    fromArea = 0,
+    toArea = 100,
+    fromSecurityPoints = 0,
+    toSecurityPoints = 5,
+    fromAmenityPoints = 0,
+    toAmenityPoints = 5,
+    areaTypeIds = [],
+    roomTypes = []
+} = {}) => ({
+    pageNumber,
+    pageSize,
+    schoolId,
+    fromPrice,
+    toPrice,
+    fromDistance,
+    toDistance,
+    fromArea,
+    toArea,
+    fromSecurityPoints,
+    toSecurityPoints,
+    fromAmenityPoints,
+    toAmenityPoints,
+    areaTypeIds,
+    roomTypes
+});
+
 /**
  * Get all rooms with pagination (Admin)
  * @param {number} pageNumber - 0-based
  * @param {number} pageSize 
+ * @param {object} filterOverrides - optional search filters matching backend payload
  */
-const getAllRoomsApi = (pageNumber = 0, pageSize = 20) => {
+const getAllRoomsApi = (pageNumber = 0, pageSize = 20, filterOverrides = {}) => {
     const URL_API = "/api/rooms/all";
-    return axios.post(URL_API, { pageNumber, pageSize });
+    return axios.post(URL_API, buildRoomSearchPayload({ pageNumber, pageSize, ...filterOverrides }));
 }
 
 /**
@@ -183,13 +218,11 @@ const uploadFilesApi = (formData) => {
 
 /**
  * Search rooms with filters (Public)
- * @param {object} filter - { areaTypeId, roomType, maxPriceVnd, minAreaSqm }
- * @param {number} pageNumber 
- * @param {number} pageSize 
+ * @param {object} payload - flattened payload that matches /api/rooms/all requirements
  */
-const searchRoomsApi = (filter = {}, pageNumber = 0, pageSize = 10) => {
+const searchRoomsApi = (payload = {}) => {
     const URL_API = "/api/rooms/all"; // TODO: Backend cần implement
-    return axios.post(URL_API, { pageNumber, pageSize, filter });
+    return axios.post(URL_API, buildRoomSearchPayload(payload));
 }
 
 /**
@@ -225,8 +258,17 @@ const getNormalizeDecisionTableApi = (xMatrix = []) => {
  * @param {Array<Array<number>>} rMatrix
  */
 const getWeightCalculateApi = (weights = [], rMatrix = []) => {
-    const URL_API = "/dss/weight-caculate";
+    const URL_API = "/dss/weight-calculate";
     return axios.post(URL_API, { weights, rMatrix });
+}
+
+/**
+ * Save distance for selected school
+ * @param {number} schoolId
+ */
+const saveDistanceApi = (schoolId) => {
+    const URL_API = "/api/rooms/save-distance";
+    return axios.post(URL_API, { schoolId });
 }
 
 /**
@@ -239,7 +281,7 @@ const getTopsisResultApi = (vMatrix = []) => {
 }
 
 const getRoomRouteMapApi = (schoolId, roomId) => {
-    const URL_API = "/rooms/view-map";
+    const URL_API = "/api/rooms/view-map";
     return axios.post(URL_API, { schoolId, roomId });
 }
 
@@ -309,6 +351,7 @@ export {
     getDecisionTableApi,
     getNormalizeDecisionTableApi,
     getWeightCalculateApi,
+    saveDistanceApi,
     getTopsisResultApi,
 
     // Legacy

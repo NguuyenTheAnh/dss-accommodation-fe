@@ -1,27 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Select, Button } from 'antd';
+import { Select, Button, message } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
-import { getAllAreaTypesApi, getAllSchoolsApi } from '../util/api';
+import { getAllSchoolsApi, saveDistanceApi } from '../util/api';
 import './SearchBox.css';
 
 const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
-    const [selectedSchool, setSelectedSchool] = useState(undefined);
-    const [selectedArea, setSelectedArea] = useState(undefined);
+    const [selectedSchool, setSelectedSchool] = useState();
     const [schools, setSchools] = useState([]);
-    const [areas, setAreas] = useState([]);
 
     useEffect(() => {
         fetchSchools();
-        fetchAreaTypes();
+        // hydrate selected school if cached
+        try {
+            const saved = localStorage.getItem('selectedSchoolId');
+            if (saved) {
+                setSelectedSchool(Number(saved));
+            }
+        } catch (e) {
+            console.warn('Cannot read selectedSchoolId', e);
+        }
     }, []);
 
     const fetchSchools = async (keyword = '') => {
         try {
             const response = await getAllSchoolsApi(keyword);
-
             if (response.code === '00' && Array.isArray(response.data)) {
                 const schoolOptions = response.data.map((school) => ({
-                    value: school.id,
+                    value: Number(school.id),
                     label: school.name
                 }));
                 setSchools(schoolOptions);
@@ -31,48 +36,32 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
         }
     };
 
-    const fetchAreaTypes = async () => {
-        try {
-            const response = await getAllAreaTypesApi();
-
-            if (response.code === '00' && Array.isArray(response.data)) {
-                const areaOptions = response.data.map((area) => ({
-                    value: area.id,
-                    label: area.name
-                }));
-                setAreas(areaOptions);
-            } else {
-                setAreas(getDefaultAreas());
-            }
-        } catch (error) {
-            console.error('Error fetching area types:', error);
-            setAreas(getDefaultAreas());
-        }
-    };
-
-    const getDefaultAreas = () => [
-        { value: 1, label: 'Gần trường' },
-        { value: 2, label: 'Trung tâm' },
-        { value: 3, label: 'Ngoại thành' }
-    ];
-
     const handleSearch = () => {
+        if (!selectedSchool) {
+            message.warning('Vui lòng chọn trường trước khi tìm kiếm');
+            return;
+        }
         if (onSearch) {
             onSearch({
-                school: selectedSchool,
-                area: selectedArea
+                school: selectedSchool
             });
         }
     };
 
     useEffect(() => {
-        if (selectedSchool) {
+        const persistAndSave = async () => {
+            if (!selectedSchool) return;
             try {
                 localStorage.setItem('selectedSchoolId', selectedSchool);
+                const res = await saveDistanceApi(Number(selectedSchool));
+                if (res.code !== '00') {
+                    message.warning(res.message || 'Không lưu được khoảng cách');
+                }
             } catch (e) {
                 console.warn('Cannot persist selected school', e);
             }
-        }
+        };
+        persistAndSave();
     }, [selectedSchool]);
 
     const handleKeyPress = (e) => {
@@ -86,7 +75,7 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
             <div className="search-box-content">
                 <Select
                     className="school-select"
-                    placeholder="Chọn trường"
+                    placeholder="Chọn trường (bắt buộc)"
                     size="large"
                     options={schools}
                     value={selectedSchool}
@@ -96,23 +85,8 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
                         if (open) fetchSchools('');
                     }}
                     onKeyPress={handleKeyPress}
-                    allowClear
                     showSearch
-                    filterOption={(input, option) =>
-                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                    }
-                />
-
-                <Select
-                    className="area-select"
-                    placeholder="Chọn khu vực"
-                    size="large"
-                    options={areas}
-                    value={selectedArea}
-                    onChange={setSelectedArea}
-                    onKeyPress={handleKeyPress}
-                    allowClear
-                    showSearch
+                    allowClear={false}
                     filterOption={(input, option) =>
                         (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                     }

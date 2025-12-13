@@ -16,10 +16,10 @@ const DEFAULT_FILTERS = {
 };
 
 const roomTypeOptions = [
+    { value: null, label: 'Tất cả' },
     { value: ROOM_TYPE.SINGLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE] },
+    { value: ROOM_TYPE.DOUBLE, label: ROOM_TYPE_LABELS[ROOM_TYPE.DOUBLE] },
     { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] },
-    { value: ROOM_TYPE.STUDIO, label: ROOM_TYPE_LABELS[ROOM_TYPE.STUDIO] },
-    { value: ROOM_TYPE.APARTMENT, label: ROOM_TYPE_LABELS[ROOM_TYPE.APARTMENT] }
 ];
 
 const formatPrice = (value) => `${(value / 1000000).toFixed(1)}tr`;
@@ -41,10 +41,10 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
             const response = await getAllAreaTypesApi();
             if (response.code === '00' && Array.isArray(response.data)) {
                 const options = response.data.map((area) => ({
-                    value: area.id,
+                    value: Number(area.id),
                     label: area.name
                 }));
-                setAreaTypes(options);
+                setAreaTypes([{ value: null, label: 'Tất cả' }, ...options]);
             }
         } catch (error) {
             console.error('Error fetching area types:', error);

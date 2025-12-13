@@ -1,5 +1,5 @@
 import { Card, Tag } from 'antd';
-import { EnvironmentOutlined, ExpandOutlined, DollarOutlined, StarFilled, CrownFilled } from '@ant-design/icons';
+import { EnvironmentOutlined, ExpandOutlined, DollarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './RoomCardHorizontal.css';
 
@@ -10,7 +10,7 @@ const buildImageUrl = (url) => {
     return `${backendUrl}${url}`;
 };
 
-const RoomCardHorizontal = ({ room, isBest = false }) => {
+const RoomCardHorizontal = ({ room }) => {
     const navigate = useNavigate();
     const {
         id,
@@ -37,7 +37,6 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     const displayPrice = priceVnd ? priceVnd.toLocaleString() : (price || '3.000.000');
     const displayArea = areaSqm || area || '25';
     const displayLocation = address || location || 'Hà Nội';
-    const displayRating = avgAmenity || avgSecurity || rating || 4.5;
     const displayDistance = distance || '';
     const displayAmenities = amenities || [];
 
@@ -48,16 +47,9 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
     return (
         <Card
             hoverable
-            className={`room-card-horizontal ${isBest ? 'best-room' : ''}`}
+            className="room-card-horizontal"
             onClick={handleCardClick}
         >
-            {isBest && (
-                <div className="best-badge">
-                    <CrownFilled className="crown-icon" />
-                    <span>Best Choice</span>
-                </div>
-            )}
-
             <div className="room-card-horizontal-content">
                 {/* Image Section */}
                 <div className="room-image-section">
@@ -66,10 +58,6 @@ const RoomCardHorizontal = ({ room, isBest = false }) => {
                         src={displayImage}
                         className="room-image"
                     />
-                    <div className="rating-badge">
-                        <StarFilled className="star-icon" />
-                        <span>{typeof displayRating === 'number' ? displayRating.toFixed(1) : displayRating}</span>
-                    </div>
                 </div>
 
                 {/* Info Section */}

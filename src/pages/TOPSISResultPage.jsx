@@ -72,20 +72,14 @@ const TOPSISResultPage = () => {
     []
   );
 
-  const rows = useMemo(() => cache.v?.rows || cache.init?.rows || [], [cache]);
+  const stateData = location.state || {};
 
-  const topsisResult = useMemo(
-    () =>
-      cache.result || {
-        s_star: [0.35, 0.35, 0.35],
-        s_sub: [0.35, 0.35, 0.35],
-        c_star: [0.35, 0.35, 0.35],
-        a_star: [0.9, 0.9, 0.9, 0.9, 0.9],
-        a_sub: [[0.9, 0.9, 0.9, 0.9, 0.9]],
-        rows,
-      },
-    [cache.result, rows]
+  const rows = useMemo(
+    () => stateData.rowIdsInMatrix || cache.v?.rows || cache.init?.rows || [],
+    [cache, stateData.rowIdsInMatrix]
   );
+
+  const topsisResult = useMemo(() => stateData.topsis || cache.result || {}, [cache.result, stateData.topsis]);
 
   const formatVector = (label, arr) => `${label} = (${(arr || []).join(', ')})`;
   const aSubVector = Array.isArray(topsisResult.a_sub) && Array.isArray(topsisResult.a_sub[0])
@@ -148,36 +142,36 @@ const TOPSISResultPage = () => {
             <p className="topsis-sub">Ưu tiên dựa trên khoảng cách, giá, diện tích, tiện nghi và an ninh.</p>
           </div>
           <div className="topsis-matrix-stack">
-            {cache.init && (
+            {(stateData.initMatrix || cache.init) && (
               <MatrixTable
                 title="Ma trận chuẩn hóa (initMatrix)"
-                headers={cache.init.headers || INIT_HEADERS}
-                rows={cache.init.matrix || []}
-                rowLabels={cache.init.rows || []}
+                headers={(stateData.initMatrix && INIT_HEADERS) || cache.init?.headers || INIT_HEADERS}
+                rows={stateData.initMatrix || cache.init?.matrix || []}
+                rowLabels={stateData.rowIdsInMatrix || cache.init?.rows || []}
               />
             )}
-            {cache.x && (
+            {(stateData.xMatrix || cache.x) && (
               <MatrixTable
                 title="Ma trận quyết định (X matrix)"
-                headers={cache.x.headers || DECISION_HEADERS}
-                rows={cache.x.matrix || []}
-                rowLabels={cache.x.rows || []}
+                headers={cache.x?.headers || DECISION_HEADERS}
+                rows={stateData.xMatrix || cache.x?.matrix || []}
+                rowLabels={stateData.rowIdsInMatrix || cache.x?.rows || []}
               />
             )}
-            {cache.r && (
+            {(stateData.rMatrix || cache.r) && (
               <MatrixTable
                 title="Ma trận chuẩn hóa R (rMatrix)"
-                headers={cache.r.headers || DECISION_HEADERS}
-                rows={cache.r.matrix || []}
-                rowLabels={cache.r.rows || []}
+                headers={cache.r?.headers || DECISION_HEADERS}
+                rows={stateData.rMatrix || cache.r?.matrix || []}
+                rowLabels={stateData.rowIdsInMatrix || cache.r?.rows || []}
               />
             )}
-            {cache.v && (
+            {(stateData.vMatrix || cache.v) && (
               <MatrixTable
                 title="Ma trận trọng số (vMatrix)"
-                headers={cache.v.headers || DECISION_HEADERS}
-                rows={cache.v.matrix || []}
-                rowLabels={cache.v.rows || []}
+                headers={cache.v?.headers || DECISION_HEADERS}
+                rows={stateData.vMatrix || cache.v?.matrix || []}
+                rowLabels={stateData.rowIdsInMatrix || cache.v?.rows || []}
               />
             )}
             <div className="topsis-vectors topsis-card">

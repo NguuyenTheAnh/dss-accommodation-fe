@@ -35,6 +35,8 @@ const readJson = (key) => {
   }
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const MatrixTable = ({ data = [], title, rowLabels = [], headers = INIT_HEADERS }) => {
   const rows = Array.isArray(data) ? data : [];
   const labels = rows.map((_, idx) => ensureArray(rowLabels)[idx] ?? idx + 1);
@@ -72,42 +74,13 @@ const MatrixTable = ({ data = [], title, rowLabels = [], headers = INIT_HEADERS 
   );
 };
 
-const FALLBACK_MATRIX = [
-  [0.85, 0.6, 0.9, 0.15, 0.2],
-  [0.75, 0.8, 0.88, 0.15, 0.2],
-  [0.7, 0.55, 0.78, 0.15, 0.2],
-];
-const MOCK_X_MATRIX = [
-  [0.82, 0.64, 0.91, 0.18, 0.23],
-  [0.78, 0.76, 0.86, 0.17, 0.21],
-  [0.69, 0.58, 0.8, 0.16, 0.2],
-];
-const MOCK_R_MATRIX = [
-  [0.81, 0.62, 0.9, 0.2, 0.25],
-  [0.77, 0.78, 0.87, 0.19, 0.23],
-  [0.7, 0.6, 0.8, 0.18, 0.22],
-];
-const MOCK_V_MATRIX = [
-  [0.8, 0.61, 0.92, 0.2, 0.25],
-  [0.76, 0.77, 0.88, 0.19, 0.23],
-  [0.71, 0.59, 0.81, 0.18, 0.22],
-];
-const MOCK_TOPSIS_RESULT = {
-  a_star: [0.9, 0.9, 0.9, 0.9, 0.9],
-  a_sub: [[0.9, 0.9, 0.9, 0.9, 0.9]],
-  s_star: [0.35, 0.35, 0.35],
-  s_sub: [0.35, 0.35, 0.35],
-  c_star: [0.35, 0.35, 0.35],
-};
-const FALLBACK_ROW_IDS = [1, 2, 3];
+const FALLBACK_MATRIX = [];
+const FALLBACK_ROW_IDS = [];
 const DEFAULT_WEIGHTS = [1, 2, 3, 4, 5];
 
 const MatrixFlowPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const switchTimerRef = useRef(null);
-  const normalizeTimerRef = useRef(null);
-  const navigateTimerRef = useRef(null);
 
   const xMatrixRef = useRef([]);
   const rMatrixRef = useRef([]);
@@ -128,7 +101,13 @@ const MatrixFlowPage = () => {
     return FALLBACK_ROW_IDS;
   }, [location.state]);
 
-  const filters = useMemo(() => location.state?.filters || {}, [location.state]);
+  const decisionFilter = useMemo(() => {
+    const fromState = location.state?.filters;
+    if (fromState && Object.keys(fromState).length) return fromState;
+    const fromCache = readJson('roomsFilterPayload');
+    if (fromCache && typeof fromCache === 'object') return fromCache;
+    return {};
+  }, [location.state]);
 
   const [matrixData, setMatrixData] = useState(initialMatrix);
   const [rowLabels, setRowLabels] = useState(ensureArray(initialRows));
@@ -141,65 +120,61 @@ const MatrixFlowPage = () => {
     let isMounted = true;
 
     const fetchDecisionAndNormalize = async () => {
-      setProgress(50);
-      let nextX = MOCK_X_MATRIX;
-      cacheJson('topsis_init', { matrix: initialMatrix, headers: INIT_HEADERS, rows: ensureArray(initialRows) });
+      setProgress(40);
+      let nextX = [];
+      cacheJson('topsis_init', {
+        matrix: initialMatrix,
+        headers: INIT_HEADERS,
+        rows: ensureArray(initialRows),
+        filter: decisionFilter,
+      });
 
-      /* TODO: Bật lại call thật khi sẵn sàng
       try {
-        const response = await getDecisionTableApi(initialMatrix, filters);
+        const response = await getDecisionTableApi(initialMatrix, decisionFilter);
         if (response.code === '00' && response.data?.xMatrix) {
           nextX = response.data.xMatrix;
         }
       } catch (error) {
         console.error('Không lấy được bảng quyết định:', error);
       }
-      */
 
       if (!isMounted) return;
       setRowLabels(ensureArray(initialRows));
       xMatrixRef.current = nextX;
 
-      switchTimerRef.current = setTimeout(() => {
-        if (!isMounted) return;
-        setMatrixData(nextX);
-        setStage('x');
-        setProgress(70);
-        cacheJson('topsis_x', { matrix: nextX, headers: DECISION_HEADERS, rows: ensureArray(initialRows) });
+      await delay(2000);
+      if (!isMounted) return;
+      setMatrixData(nextX);
+      setStage('x');
+      setProgress(65);
+      cacheJson('topsis_x', { matrix: nextX, headers: DECISION_HEADERS, rows: ensureArray(initialRows) });
 
-        let nextR = MOCK_R_MATRIX;
-        /* TODO: Bật lại call thật khi sẵn sàng
-        try {
-          const response = await getNormalizeDecisionTableApi(nextX);
-          if (response.code === '00' && response.data?.rMatrix) {
-            nextR = response.data.rMatrix;
-          }
-        } catch (error) {
-          console.error('Không lấy được ma trận R:', error);
+      let nextR = [];
+      try {
+        const response = await getNormalizeDecisionTableApi(nextX);
+        if (response.code === '00' && response.data?.rMatrix) {
+          nextR = response.data.rMatrix;
         }
-        */
+      } catch (error) {
+        console.error('Không lấy được ma trận R:', error);
+      }
 
-        normalizeTimerRef.current = setTimeout(() => {
-          if (!isMounted) return;
-          setMatrixData(nextR);
-          setStage('r');
-          setProgress(85);
-          rMatrixRef.current = nextR;
-          cacheJson('topsis_r', { matrix: nextR, headers: DECISION_HEADERS, rows: ensureArray(initialRows) });
-          setWeightModalOpen(true);
-        }, 2000);
-      }, 2000);
+      await delay(2000);
+      if (!isMounted) return;
+      setMatrixData(nextR);
+      setStage('r');
+      setProgress(85);
+      rMatrixRef.current = nextR;
+      cacheJson('topsis_r', { matrix: nextR, headers: DECISION_HEADERS, rows: ensureArray(initialRows) });
+      setWeightModalOpen(true);
     };
 
     fetchDecisionAndNormalize();
 
     return () => {
       isMounted = false;
-      if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
-      if (normalizeTimerRef.current) clearTimeout(normalizeTimerRef.current);
-      if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
     };
-  }, [filters, initialMatrix, initialRows, navigate]);
+  }, [decisionFilter, initialMatrix, initialRows, navigate]);
 
   const handleWeightChange = (idx, value) => {
     const next = [...weights];
@@ -211,9 +186,8 @@ const MatrixFlowPage = () => {
     setWeightModalOpen(false);
     setProgress(95);
 
-    let nextV = MOCK_V_MATRIX;
-    let topsisResult = MOCK_TOPSIS_RESULT;
-    /* TODO: Bật lại call thật khi sẵn sàng
+    let nextV = [];
+    let topsisResult = {};
     try {
       const response = await getWeightCalculateApi(weights, rMatrixRef.current);
       if (response.code === '00' && response.data?.vMatrix) {
@@ -226,7 +200,6 @@ const MatrixFlowPage = () => {
     } catch (error) {
       console.error('Không lấy được ma trận V / kết quả TOPSIS:', error);
     }
-    */
 
     setMatrixData(nextV);
     setStage('v');
@@ -234,22 +207,23 @@ const MatrixFlowPage = () => {
     cacheJson('topsis_result', {
       ...topsisResult,
       rows: ensureArray(initialRows),
+      filter: decisionFilter,
+      weights,
     });
 
-    navigateTimerRef.current = setTimeout(() => {
-      setProgress(100);
-      navigate('/topsis-result', {
-        state: {
-          vMatrix: nextV,
-          rMatrix: rMatrixRef.current,
-          xMatrix: xMatrixRef.current,
-          rowIdsInMatrix: initialRows,
-          weights,
-          filters,
-          topsis: topsisResult,
-        },
-      });
-    }, 2000);
+    await delay(2000);
+    setProgress(100);
+    navigate('/topsis-result', {
+      state: {
+        vMatrix: nextV,
+        rMatrix: rMatrixRef.current,
+        xMatrix: xMatrixRef.current,
+        rowIdsInMatrix: initialRows,
+        weights,
+        filters: decisionFilter,
+        topsis: topsisResult,
+      },
+    });
   };
 
   const currentHeaders = stage === 'init' ? INIT_HEADERS : DECISION_HEADERS;
