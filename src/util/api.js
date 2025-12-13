@@ -229,6 +229,15 @@ const getWeightCalculateApi = (weights = [], rMatrix = []) => {
     return axios.post(URL_API, { weights, rMatrix });
 }
 
+/**
+ * TOPSIS ranking
+ * @param {Array<Array<number>>} vMatrix
+ */
+const getTopsisResultApi = (vMatrix = []) => {
+    const URL_API = "/dss/topsis";
+    return axios.post(URL_API, { vMatrix });
+}
+
 const getRoomRouteMapApi = (schoolId, roomId) => {
     const URL_API = "/rooms/view-map";
     return axios.post(URL_API, { schoolId, roomId });
@@ -300,6 +309,7 @@ export {
     getDecisionTableApi,
     getNormalizeDecisionTableApi,
     getWeightCalculateApi,
+    getTopsisResultApi,
 
     // Legacy
     createUserApi,

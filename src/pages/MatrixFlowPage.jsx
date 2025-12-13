@@ -2,7 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Modal, InputNumber } from 'antd';
 import './MatrixFlowPage.css';
-import { getDecisionTableApi, getNormalizeDecisionTableApi, getWeightCalculateApi } from '../util/api';
+import {
+  getDecisionTableApi,
+  getNormalizeDecisionTableApi,
+  getWeightCalculateApi,
+  getTopsisResultApi,
+} from '../util/api';
 
 const INIT_HEADERS = ['Giá', 'Khoảng cách', 'Diện tích', 'Tiện nghi', 'An ninh'];
 const DECISION_HEADERS = [
@@ -19,6 +24,14 @@ const cacheJson = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (err) {
     console.warn('Cannot cache', key, err);
+  }
+};
+const readJson = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
   }
 };
 
@@ -59,40 +72,33 @@ const MatrixTable = ({ data = [], title, rowLabels = [], headers = INIT_HEADERS 
   );
 };
 
-const parseStoredJson = (key) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch (err) {
-    console.warn(`Cannot parse cached ${key}`, err);
-    return null;
-  }
-};
-
 const FALLBACK_MATRIX = [
   [0.85, 0.6, 0.9, 0.15, 0.2],
   [0.75, 0.8, 0.88, 0.15, 0.2],
   [0.7, 0.55, 0.78, 0.15, 0.2],
 ];
-
 const MOCK_X_MATRIX = [
   [0.82, 0.64, 0.91, 0.18, 0.23],
   [0.78, 0.76, 0.86, 0.17, 0.21],
   [0.69, 0.58, 0.8, 0.16, 0.2],
 ];
-
 const MOCK_R_MATRIX = [
   [0.81, 0.62, 0.9, 0.2, 0.25],
   [0.77, 0.78, 0.87, 0.19, 0.23],
   [0.7, 0.6, 0.8, 0.18, 0.22],
 ];
-
 const MOCK_V_MATRIX = [
   [0.8, 0.61, 0.92, 0.2, 0.25],
   [0.76, 0.77, 0.88, 0.19, 0.23],
   [0.71, 0.59, 0.81, 0.18, 0.22],
 ];
-
+const MOCK_TOPSIS_RESULT = {
+  a_star: [0.9, 0.9, 0.9, 0.9, 0.9],
+  a_sub: [[0.9, 0.9, 0.9, 0.9, 0.9]],
+  s_star: [0.35, 0.35, 0.35],
+  s_sub: [0.35, 0.35, 0.35],
+  c_star: [0.35, 0.35, 0.35],
+};
 const FALLBACK_ROW_IDS = [1, 2, 3];
 const DEFAULT_WEIGHTS = [1, 2, 3, 4, 5];
 
@@ -108,7 +114,7 @@ const MatrixFlowPage = () => {
 
   const initialMatrix = useMemo(() => {
     const fromState = location.state?.initMatrix;
-    const fromCache = parseStoredJson('roomsInitMatrix');
+    const fromCache = readJson('roomsInitMatrix');
     if (Array.isArray(fromState) && fromState.length) return fromState;
     if (Array.isArray(fromCache) && fromCache.length) return fromCache;
     return FALLBACK_MATRIX;
@@ -116,7 +122,7 @@ const MatrixFlowPage = () => {
 
   const initialRows = useMemo(() => {
     const fromState = location.state?.rowIdsInMatrix;
-    const fromCache = parseStoredJson('roomsRowIds');
+    const fromCache = readJson('roomsRowIds');
     if (Array.isArray(fromState) && fromState.length) return fromState;
     if (Array.isArray(fromCache) && fromCache.length) return fromCache;
     return FALLBACK_ROW_IDS;
@@ -197,7 +203,7 @@ const MatrixFlowPage = () => {
 
   const handleWeightChange = (idx, value) => {
     const next = [...weights];
-    next[idx] = value;
+    next[idx] = value || 0;
     setWeights(next);
   };
 
@@ -206,20 +212,29 @@ const MatrixFlowPage = () => {
     setProgress(95);
 
     let nextV = MOCK_V_MATRIX;
+    let topsisResult = MOCK_TOPSIS_RESULT;
     /* TODO: Bật lại call thật khi sẵn sàng
     try {
       const response = await getWeightCalculateApi(weights, rMatrixRef.current);
       if (response.code === '00' && response.data?.vMatrix) {
         nextV = response.data.vMatrix;
       }
+      const topsisRes = await getTopsisResultApi(nextV);
+      if (topsisRes.code === '00' && topsisRes.data) {
+        topsisResult = topsisRes.data;
+      }
     } catch (error) {
-      console.error('Không lấy được ma trận V:', error);
+      console.error('Không lấy được ma trận V / kết quả TOPSIS:', error);
     }
     */
 
     setMatrixData(nextV);
     setStage('v');
     cacheJson('topsis_v', { matrix: nextV, headers: DECISION_HEADERS, rows: ensureArray(initialRows), weights });
+    cacheJson('topsis_result', {
+      ...topsisResult,
+      rows: ensureArray(initialRows),
+    });
 
     navigateTimerRef.current = setTimeout(() => {
       setProgress(100);
@@ -231,6 +246,7 @@ const MatrixFlowPage = () => {
           rowIdsInMatrix: initialRows,
           weights,
           filters,
+          topsis: topsisResult,
         },
       });
     }, 2000);
@@ -281,7 +297,7 @@ const MatrixFlowPage = () => {
               min={0.01}
               step={0.1}
               value={weights[idx]}
-              onChange={(val) => handleWeightChange(idx, Number(val) || 0)}
+              onChange={(val) => handleWeightChange(idx, Number(val))}
               style={{ width: 140 }}
             />
           </div>

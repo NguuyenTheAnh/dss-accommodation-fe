@@ -61,7 +61,6 @@ const ManagementSidebar = () => {
             <div className={`management-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 {/* Logo */}
                 <div className="sidebar-logo">
-                    <HomeOutlined className="logo-icon" />
                     <h1 className="logo-text">DormFinder</h1>
                     <p className="logo-subtitle">Quản trị</p>
                 </div>

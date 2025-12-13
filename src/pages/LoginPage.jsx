@@ -61,7 +61,6 @@ const LoginPage = () => {
                 <div className="login-card">
                     <div className="login-header">
                         <div className="login-logo">
-                            <HomeOutlined className="logo-icon" />
                             <h1 className="logo-text">DormFinder</h1>
                         </div>
                         <h2 className="login-title">Quản trị viên</h2>

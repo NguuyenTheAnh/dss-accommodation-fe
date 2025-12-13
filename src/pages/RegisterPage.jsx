@@ -80,7 +80,6 @@ const RegisterPage = () => {
                 <div className="register-card">
                     <div className="register-header">
                         <div className="register-logo">
-                            <HomeOutlined className="logo-icon" />
                             <h1 className="logo-text">DormFinder</h1>
                         </div>
                         <h2 className="register-title">Đăng ký tài khoản</h2>

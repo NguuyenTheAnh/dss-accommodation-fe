@@ -8,7 +8,6 @@ const Header = () => {
             <div className="container">
                 <div className="header-content">
                     <Link to="/" className="logo">
-                        <HomeOutlined className="logo-icon" />
                         <span className="logo-text">DormFinder</span>
                     </Link>
                 </div>
