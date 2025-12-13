@@ -28,6 +28,14 @@ const RoomDetailPage = () => {
     const [selectedSchool, setSelectedSchool] = useState(null);
     const [routeData, setRouteData] = useState(null);
 
+    useEffect(() => {
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, []);
+
     const buildImageUrl = (url) => {
         if (!url) return url;
         if (url.startsWith('http')) return url;
