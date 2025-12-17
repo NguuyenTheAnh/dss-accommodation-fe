@@ -184,7 +184,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
         try {
 
-            // Láº¥y danh sÃ¡ch táº¥t cáº£ surveys Ä‘á»ƒ biáº¿t ID cá»§a AMENITY vÃ  SECURITY
+            // Lấy danh sách tất cả surveys để biết ID của AMENITY và SECURITY
 
             const surveysResponse = await getAllSurveysApi();
 
@@ -192,7 +192,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             if (surveysResponse.code !== '00' || !surveysResponse.data) {
 
-                message.error('KhÃ´ng thá»ƒ táº£i danh sÃ¡ch kháº£o sÃ¡t');
+                message.error('Không thể tải danh sách khảo sát');
 
                 return;
 
@@ -208,7 +208,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-            // Láº¥y cÃ¢u há»i tá»« cáº£ 2 surveys
+            // Lấy câu hỏi từ cả 2 surveys
 
             const allQuestions = [];
 
@@ -262,7 +262,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-            // Náº¿u Ä‘ang edit vÃ  cÃ³ room.id, set giÃ¡ trá»‹ tá»« surveyAnswers cá»§a room
+            // Nếu đang edit và có room.id, set giá trị từ surveyAnswers của room
 
             if ((mode === 'edit' || mode === 'view') && roomDetail?.surveyAnswers?.length > 0) {
 
@@ -282,7 +282,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             console.error('Error fetching survey data:', error);
 
-            message.error('CÃ³ lá»—i xáº£y ra khi táº£i dá»¯ liá»‡u kháº£o sÃ¡t');
+            message.error('Có lỗi xảy ra khi tải dữ liệu khảo sát');
 
         }
 
@@ -290,13 +290,13 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-    // Khá»Ÿi táº¡o giÃ¡ trá»‹ máº·c Ä‘á»‹nh cho survey form (cháº¿ Ä‘á»™ thÃªm má»›i)
+    // Khởi tạo giá trị mặc định cho survey form (chế độ thêm mới)
 
     const initializeSurveyForm = () => {
 
         const defaultValues = {};
 
-        // Set táº¥t cáº£ cÃ¢u há»i vá» 0 Ä‘iá»ƒm
+        // Set tất cả câu hỏi về 0 điểm
 
         for (let i = 1; i <= 10; i++) {
 
@@ -395,135 +395,71 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
     // Handle image upload
 
     const handleUploadCoverImage = async (file) => {
-
         try {
-
             setUploadingCover(true);
-
             const formData = new FormData();
-
             formData.append('files', file);
-
-
 
             const response = await uploadFilesApi(formData);
 
-
-
             if (response.code === '00' && response.data && response.data.length > 0) {
-
                 const uploadedFile = response.data[0];
-
                 const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
-
                 setCoverImage({
-
                     id: uploadedFile.id,
-
                     url: `${backendUrl}${uploadedFile.url}`
-
                 });
-
-                message.success('Upload áº£nh bÃ¬a thÃ nh cÃ´ng');
-
+                message.success('Upload ảnh bìa thành công');
             } else {
-
-                message.error('Upload áº£nh bÃ¬a tháº¥t báº¡i');
-
+                message.error('Upload ảnh bìa thất bại');
             }
-
         } catch (error) {
-
             console.error('Error uploading cover image:', error);
-
-            message.error('CÃ³ lá»—i xáº£y ra khi upload áº£nh bÃ¬a');
-
+            message.error('Có lỗi xảy ra khi upload ảnh bìa');
         } finally {
-
             setUploadingCover(false);
-
         }
-
         return false; // Prevent auto upload
-
     };
 
 
-
     const handleUploadOtherImages = async (file, fileList) => {
-
-        // Chá»‰ xá»­ lÃ½ khi lÃ  file cuá»‘i cÃ¹ng trong danh sÃ¡ch Ä‘á»ƒ trÃ¡nh gá»i nhiá»u láº§n
-
+        // Chỉ xử lý khi là file cuối cùng trong danh sách để tránh gọi nhiều lần
         const isLastFile = fileList[fileList.length - 1] === file;
-
         if (!isLastFile) {
-
             return false;
-
         }
 
-
-
         try {
-
             setUploadingOthers(true);
-
             const formData = new FormData();
 
-
-
-            // Upload táº¥t cáº£ files Ä‘Æ°á»£c chá»n
-
+            // Upload tất cả files được chọn
             fileList.forEach(f => {
-
                 formData.append('files', f);
-
             });
-
-
 
             const response = await uploadFilesApi(formData);
 
-
-
             if (response.code === '00' && response.data && response.data.length > 0) {
-
-                // ThÃªm táº¥t cáº£ áº£nh Ä‘Ã£ upload vÃ o danh sÃ¡ch
-
+                // Thêm tất cả ảnh đã upload vào danh sách
                 const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
-
                 const newImages = response.data.map(uploadedFile => ({
-
                     id: uploadedFile.id,
-
                     url: `${backendUrl}${uploadedFile.url}`
-
                 }));
-
                 setOtherImages(prev => [...prev, ...newImages]);
-
-                message.success(`Upload thÃ nh cÃ´ng ${response.data.length} áº£nh`);
-
+                message.success(`Upload thành công ${response.data.length} ảnh`);
             } else {
-
-                message.error('Upload áº£nh tháº¥t báº¡i');
-
+                message.error('Upload ảnh thất bại');
             }
-
         } catch (error) {
-
             console.error('Error uploading image:', error);
-
-            message.error('CÃ³ lá»—i xáº£y ra khi upload áº£nh');
-
+            message.error('Có lỗi xảy ra khi upload ảnh');
         } finally {
-
             setUploadingOthers(false);
-
         }
-
         return false; // Prevent auto upload
-
     };
 
 
@@ -550,7 +486,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
         try {
 
-            // Validate cáº£ 2 form
+            // Validate cả 2 form
 
             await form.validateFields();
 
@@ -562,7 +498,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-            // Chuyá»ƒn Ä‘á»•i survey values thÃ nh format API
+            // Chuyển đổi survey values thành format API
 
             const surveyAnswers = Object.keys(surveyValues)
 
@@ -580,7 +516,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                 })
 
-                .filter(answer => answer.point != null && answer.point !== 0); // Chá»‰ gá»­i nhá»¯ng cÃ¢u Ä‘Ã£ tráº£ lá»i
+                .filter(answer => answer.point != null && answer.point !== 0); // Chỉ gửi những câu đã trả lời
 
 
 
@@ -588,7 +524,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-            // Táº¡o object theo Ä‘Ãºng format BE yÃªu cáº§u
+            // Tạo object theo đúng format BE yêu cầu
 
             const updatedRoom = {
 
@@ -624,7 +560,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-            // Náº¿u Ä‘ang edit, thÃªm id
+            // Nếu đang edit, thêm id
 
             if (roomDetail?.id) {
 
@@ -644,13 +580,13 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             if (error.errorFields) {
 
-                message.error('Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin!');
+                message.error('Vui lòng điền đầy đủ thông tin!');
 
             } else {
 
                 console.error('Error saving room:', error);
 
-                message.error('CÃ³ lá»—i xáº£y ra khi lÆ°u phÃ²ng');
+                message.error('Có lỗi xảy ra khi lưu phòng');
 
             }
 
@@ -664,7 +600,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-    // Mock map component (sáº½ Ä‘Æ°á»£c BE xá»­ lÃ½ sau)
+    // Mock map component (sẽ được BE xử lý sau)
 
     // Leaflet default marker assets
 
@@ -759,23 +695,14 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                 </div>
 
                 <div className="map-note">
-
                     <p style={{ margin: 0, fontSize: 14 }}>
-
-                        Tá»a Ä‘á»™ hiá»‡n táº¡i: <strong>{lat.toFixed(6)}</strong>, <strong>{lng.toFixed(6)}</strong>
-
+                        Tọa độ hiện tại: <strong>{lat.toFixed(6)}</strong>, <strong>{lng.toFixed(6)}</strong>
                     </p>
-
                     <p style={{ margin: 0, fontSize: 12, color: '#5f6b7a' }}>
-
-                        (Kinh Ä‘á»™ vÃ  vÄ© Ä‘á»™ dÃ¹ng Ä‘á»ƒ Ä‘á»‹nh vá»‹ chÃ­nh xÃ¡c phÃ²ng trá» trÃªn báº£n Ä‘á»“. HÃ£y kiá»ƒm tra ká»¹ trÆ°á»›c khi lÆ°u.
-
-                        {selecting ? ' Äang chá»n vá»‹ trÃ­, hÃ£y click trÃªn báº£n Ä‘á»“.' : ''}
-
+                        (Kinh độ và vĩ độ dùng để định vị chính xác phòng trọ trên bản đồ. Hãy kiểm tra kỹ trước khi lưu.
+                        {selecting ? ' Đang chọn vị trí, hãy click trên bản đồ.' : ''}
                         )
-
                     </p>
-
                 </div>
 
             </div>
@@ -810,21 +737,21 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                     <Card className="room-info-section">
 
-                        <h3 className="section-title">ThÃ´ng tin cÆ¡ báº£n</h3>
+                        <h3 className="section-title">Thông tin cơ bản</h3>
 
 
 
                         <Form.Item
 
-                            label="TÃªn phÃ²ng"
+                            label="Tên phòng"
 
                             name="title"
 
-                            rules={[{ required: true, message: 'Vui lÃ²ng nháº­p tÃªn phÃ²ng' }]}
+                            rules={[{ required: true, message: 'Vui lòng nhập tên phòng' }]}
 
                         >
 
-                            <Input placeholder="VD: PhÃ²ng trá» cao cáº¥p gáº§n ÄH BÃ¡ch Khoa" size="large" />
+                            <Input placeholder="VD: Phòng trọ cao cấp gần ĐH Bách Khoa" size="large" />
 
                         </Form.Item>
 
@@ -832,7 +759,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                         <Form.Item
 
-                            label="MÃ´ táº£"
+                            label="Mô tả"
 
                             name="description"
 
@@ -842,7 +769,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 rows={4}
 
-                                placeholder="MÃ´ táº£ chi tiáº¿t vá» phÃ²ng..."
+                                placeholder="Mô tả chi tiết về phòng..."
 
                             />
 
@@ -852,15 +779,15 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                         <Form.Item
 
-                            label="Äá»‹a chá»‰"
+                            label="Địa chỉ"
 
                             name="address"
 
-                            rules={[{ required: true, message: 'Vui lÃ²ng nháº­p Ä‘á»‹a chá»‰' }]}
+                            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
 
                         >
 
-                            <Input placeholder="VD: 123 Äáº¡i Cá»“ Viá»‡t, Hai BÃ  TrÆ°ng, HÃ  Ná»™i" size="large" />
+                            <Input placeholder="VD: 123 Đại Cồ Việt, Hai Bà Trưng, Hà Nội" size="large" />
 
                         </Form.Item>
 
@@ -872,11 +799,11 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="VÄ© Ä‘á»™ (Latitude)"
+                                    label="Vĩ độ (Latitude)"
 
                                     name="latitude"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng nháº­p vÄ© Ä‘á»™' }]}
+                                    rules={[{ required: true, message: 'Vui lòng nhập vĩ độ' }]}
 
                                 >
 
@@ -900,11 +827,11 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="Kinh Ä‘á»™ (Longitude)"
+                                    label="Kinh độ (Longitude)"
 
                                     name="longitude"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng nháº­p kinh Ä‘á»™' }]}
+                                    rules={[{ required: true, message: 'Vui lòng nhập kinh độ' }]}
 
                                 >
 
@@ -934,11 +861,11 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="GiÃ¡ thuÃª (VNÄ)"
+                                    label="Giá thuê (VNĐ)"
 
                                     name="priceVnd"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng nháº­p giÃ¡ thuÃª' }]}
+                                    rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}
 
                                 >
 
@@ -966,11 +893,11 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="Diá»‡n tÃ­ch (mÂ²)"
+                                    label="Diện tích (m²)"
 
                                     name="areaSqm"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng nháº­p diá»‡n tÃ­ch' }]}
+                                    rules={[{ required: true, message: 'Vui lòng nhập diện tích' }]}
 
                                 >
 
@@ -1002,15 +929,15 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="Loáº¡i phÃ²ng"
+                                    label="Loại phòng"
 
                                     name="roomType"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng chá»n loáº¡i phÃ²ng' }]}
+                                    rules={[{ required: true, message: 'Vui lòng chọn loại phòng' }]}
 
                                 >
 
-                                    <Select placeholder="Chá»n loáº¡i phÃ²ng" size="large">
+                                    <Select placeholder="Chọn loại phòng" size="large">
 
                                         <Option value={ROOM_TYPE.SINGLE}>{ROOM_TYPE_LABELS[ROOM_TYPE.SINGLE]}</Option>
 
@@ -1030,15 +957,15 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <Form.Item
 
-                                    label="Tráº¡ng thÃ¡i"
+                                    label="Trạng thái"
 
                                     name="status"
 
-                                    rules={[{ required: true, message: 'Vui lÃ²ng chá»n tráº¡ng thÃ¡i' }]}
+                                    rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
 
                                 >
 
-                                    <Select placeholder="Chá»n tráº¡ng thÃ¡i" size="large">
+                                    <Select placeholder="Chọn trạng thái" size="large">
 
                                         <Option value={ROOM_STATUS.AVAILABLE}>{ROOM_STATUS_LABELS[ROOM_STATUS.AVAILABLE]}</Option>
 
@@ -1056,15 +983,15 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                         <Form.Item
 
-                            label="Khu vá»±c"
+                            label="Khu vực"
 
                             name="areaTypeId"
 
-                            rules={[{ required: true, message: 'Vui lÃ²ng chá»n khu vá»±c' }]}
+                            rules={[{ required: true, message: 'Vui lòng chọn khu vực' }]}
 
                         >
 
-                            <Select placeholder="Chá»n khu vá»±c" size="large">
+                            <Select placeholder="Chọn khu vực" size="large">
 
                                 {areaTypes.map(area => (
 
@@ -1082,11 +1009,11 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 
-                        <h3 className="section-title">áº¢nh phÃ²ng</h3>
+                        <h3 className="section-title">Ảnh phòng</h3>
 
 
 
-                        <Form.Item label="áº¢nh bÃ¬a">
+                        <Form.Item label="Ảnh bìa">
 
                             {coverImage ? (
 
@@ -1133,9 +1060,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                                 >
 
                                     <Button icon={<UploadOutlined />} loading={uploadingCover} size="large" block>
-
-                                        {uploadingCover ? 'Äang táº£i lÃªn...' : 'Chá»n áº£nh bÃ¬a'}
-
+                                        {uploadingCover ? 'Đang tải lên...' : 'Chọn ảnh bìa'}
                                     </Button>
 
                                 </Upload>
@@ -1143,16 +1068,14 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                             )}
 
                             <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
-
-                                áº¢nh bÃ¬a sáº½ hiá»ƒn thá»‹ lÃ m áº£nh Ä‘áº¡i diá»‡n cá»§a phÃ²ng
-
+                                Ảnh bìa sẽ hiển thị làm ảnh đại diện của phòng
                             </div>
 
                         </Form.Item>
 
 
 
-                        <Form.Item label="áº¢nh khÃ¡c">
+                        <Form.Item label="Ảnh khác">
 
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
 
@@ -1212,7 +1135,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                     >
 
-                                        <span>{uploadingOthers ? 'Äang táº£i...' : '+'}</span>
+                                        <span>{uploadingOthers ? 'Đang tải...' : '+'}</span>
 
                                     </Button>
 
@@ -1221,9 +1144,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                             </div>
 
                             <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
-
-                                CÃ³ thá»ƒ upload nhiá»u áº£nh Ä‘á»ƒ hiá»ƒn thá»‹ chi tiáº¿t phÃ²ng
-
+                                Có thể upload nhiều ảnh để hiển thị chi tiết phòng
                             </div>
 
                         </Form.Item>
@@ -1372,9 +1293,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
                             <Rate disabled defaultValue={roomDetail?.avgAmenity || 0} allowHalf />
 
                             <span className="rating-text">
-
-                                {roomDetail?.avgAmenity?.toFixed(1) || 0} (Tiá»‡n nghi)
-
+                                {roomDetail?.avgAmenity?.toFixed(1) || 0} (Tiện nghi)
                             </span>
 
                         </div>
@@ -1393,9 +1312,8 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <div>
 
-                                <span className="price-amount">{roomDetail?.priceVnd?.toLocaleString()}Ä‘</span>
-
-                                <span className="price-period">/thÃ¡ng</span>
+                                <span className="price-amount">{roomDetail?.priceVnd?.toLocaleString()}đ</span>
+                                <span className="price-period">/tháng</span>
 
                             </div>
 
@@ -1405,7 +1323,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <ExpandOutlined className="info-icon" />
 
-                            <span className="info-text">{roomDetail?.areaSqm}mÂ²</span>
+                            <span className="info-text">{roomDetail?.areaSqm}m²</span>
 
                         </div>
 
@@ -1429,7 +1347,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                     <div className="room-section">
 
-                        <h3 className="section-title">Äá»‹a chá»‰</h3>
+                        <h3 className="section-title">Địa chỉ</h3>
 
                         <div className="address-info">
 
@@ -1451,9 +1369,8 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                     <div className="room-section">
 
-                        <h3 className="section-title">MÃ´ táº£</h3>
-
-                        <p className="room-description">{roomDetail?.description || 'ChÆ°a cÃ³ mÃ´ táº£'}</p>
+                        <h3 className="section-title">Mô tả</h3>
+                        <p className="room-description">{roomDetail?.description || 'Chưa có mô tả'}</p>
 
                     </div>
 
@@ -1467,13 +1384,13 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                     <div className="room-section">
 
-                        <h3 className="section-title">ThÃ´ng tin khÃ¡c</h3>
+                        <h3 className="section-title">Thông tin khác</h3>
 
                         <div className="info-grid">
 
                             <div className="info-row">
 
-                                <span className="info-label">Loáº¡i khu vá»±c:</span>
+                                <span className="info-label">Loại khu vực:</span>
 
                                 <span className="info-value">{roomDetail?.areaTypeName || 'N/A'}</span>
 
@@ -1481,7 +1398,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <div className="info-row">
 
-                                <span className="info-label">Äiá»ƒm tiá»‡n nghi:</span>
+                                <span className="info-label">Điểm tiện nghi:</span>
 
                                 <span className="info-value">
 
@@ -1495,7 +1412,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <div className="info-row">
 
-                                <span className="info-label">Äiá»ƒm an ninh:</span>
+                                <span className="info-label">Điểm an ninh:</span>
 
                                 <span className="info-value">
 
@@ -1509,7 +1426,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <div className="info-row">
 
-                                <span className="info-label">Tráº¡ng thÃ¡i:</span>
+                                <span className="info-label">Trạng thái:</span>
 
                                 <Tag color={roomDetail?.status === 'AVAILABLE' ? 'green' : 'red'}>
 
@@ -1525,7 +1442,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                     <div className="info-row">
 
-                                        <span className="info-label">Chá»§ nhÃ :</span>
+                                        <span className="info-label">Chủ nhà:</span>
 
                                         <span className="info-value">{roomDetail.landlord.fullName}</span>
 
@@ -1533,7 +1450,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                     <div className="info-row">
 
-                                        <span className="info-label">Sá»‘ Ä‘iá»‡n thoáº¡i:</span>
+                                        <span className="info-label">Số điện thoại:</span>
 
                                         <span className="info-value">{roomDetail.landlord.phoneNumber}</span>
 
@@ -1603,7 +1520,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             <div className="stat-number">{surveyAnswers.length}</div>
 
-                            <div className="stat-label">Tá»•ng cÃ¢u há»i kháº£o sÃ¡t</div>
+                            <div className="stat-label">Tổng câu hỏi khảo sát</div>
 
                         </div>
 
@@ -1635,7 +1552,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             </div>
 
-                            <div className="stat-label">Äiá»ƒm trung bÃ¬nh</div>
+                            <div className="stat-label">Điểm trung bình</div>
 
                         </div>
 
@@ -1653,7 +1570,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             {/* Survey Questions & Answers */}
 
-            <Card title="Chi tiáº¿t káº¿t quáº£ kháº£o sÃ¡t" className="survey-details-card">
+            <Card title="Chi tiết kết quả khảo sát" className="survey-details-card">
 
                 <List
 
@@ -1697,7 +1614,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                         <span className="answer-count">
 
-                                            ({answer?.totalAnswers || 0} Ä‘Ã¡nh giÃ¡)
+                                            ({answer?.totalAnswers || 0} đánh giá)
 
                                         </span>
 
@@ -1739,7 +1656,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                 <Row gutter={[24, 24]}>
 
-                    {/* Tiá»‡n nghi Form */}
+                    {/* Tiện nghi Form */}
 
                     <Col xs={24} lg={12}>
 
@@ -1749,7 +1666,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <div className="survey-card-header">
 
-                                    <span>Form Kháº£o SÃ¡t Tiá»‡n Nghi</span>
+                                    <span>Form Khảo Sát Tiện Nghi</span>
 
                                     <div className="survey-avg-display">
 
@@ -1789,7 +1706,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                     name={`question_${question.id}`}
 
-                                    rules={isEditMode ? [{ required: true, message: 'Vui lÃ²ng Ä‘Ã¡nh giÃ¡ cÃ¢u há»i nÃ y' }] : []}
+                                     rules={isEditMode ? [{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }] : []}
 
                                 >
 
@@ -1803,7 +1720,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                             if (isEditMode) {
 
-                                                // Trigger re-render Ä‘á»ƒ cáº­p nháº­t Ä‘iá»ƒm trung bÃ¬nh
+                                                // Trigger re-render để cập nhật điểm trung bình
 
                                                 surveyForm.validateFields([`question_${question.id}`]);
 
@@ -1833,7 +1750,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                 <div className="survey-card-header">
 
-                                    <span>Form Kháº£o SÃ¡t An Ninh</span>
+                                    <span>Form Khảo Sát An Ninh</span>
 
                                     <div className="survey-avg-display">
 
@@ -1873,7 +1790,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                     name={`question_${question.id}`}
 
-                                    rules={isEditMode ? [{ required: true, message: 'Vui lÃ²ng Ä‘Ã¡nh giÃ¡ cÃ¢u há»i nÃ y' }] : []}
+                                     rules={isEditMode ? [{ required: true, message: 'Vui lòng đánh giá câu hỏi này' }] : []}
 
                                 >
 
@@ -1887,7 +1804,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                                             if (isEditMode) {
 
-                                                // Trigger re-render Ä‘á»ƒ cáº­p nháº­t Ä‘iá»ƒm trung bÃ¬nh
+                                                // Trigger re-render để cập nhật điểm trung bình
 
                                                 surveyForm.validateFields([`question_${question.id}`]);
 
@@ -1933,7 +1850,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             >
 
-                                {isAddMode ? 'Táº¡o phÃ²ng má»›i' : 'LÆ°u thay Ä‘á»•i'}
+                                {isAddMode ? 'Tạo phòng mới' : 'Lưu thay đổi'}
 
                             </Button>
 
@@ -1957,7 +1874,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             key: 'info',
 
-            label: 'ThÃ´ng tin chi tiáº¿t',
+            label: 'Thông tin chi tiết',
 
             children: roomInfoTab
 
@@ -1967,7 +1884,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
             key: 'survey-form',
 
-            label: 'Form kháº£o sÃ¡t',
+            label: 'Form khảo sát',
 
             children: surveyFormTab
 
@@ -1979,11 +1896,9 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     const getHeaderTitle = () => {
 
-        if (isAddMode) return 'ThÃªm phÃ²ng má»›i';
-
-        if (isEditMode) return `Chá»‰nh sá»­a: ${roomDetail?.title || ''}`;
-
-        return roomDetail?.title || room?.title || room?.name || 'Chi tiáº¿t phÃ²ng';
+        if (isAddMode) return 'Thêm phòng mới';
+        if (isEditMode) return `Chỉnh sửa: ${roomDetail?.title || ''}`;
+        return roomDetail?.title || room?.title || room?.name || 'Chi tiết phòng';
 
     };
 
@@ -2005,7 +1920,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                 >
 
-                    Quay láº¡i
+                    Quay lại
 
                 </Button>
 
@@ -2017,7 +1932,7 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                         <Tag color={room?.status === ROOM_STATUS.AVAILABLE || room?.status === 'AVAILABLE' ? 'green' : 'red'}>
 
-                            {ROOM_STATUS_LABELS[room?.status] || (room?.status === 'available' ? 'CÃ²n trá»‘ng' : 'ÄÃ£ thuÃª')}
+                            {ROOM_STATUS_LABELS[room?.status] || (room?.status === 'available' ? 'Còn trống' : 'Đã thuê')}
 
                         </Tag>
 
@@ -2054,5 +1969,3 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
 
 export default RoomDetailManagement;
-
-

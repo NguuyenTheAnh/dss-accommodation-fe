@@ -144,7 +144,7 @@ const TOPSISResultPage = () => {
           <div className="topsis-matrix-stack">
             {(stateData.initMatrix || cache.init) && (
               <MatrixTable
-                title="Ma trận chuẩn hóa (initMatrix)"
+                title="Bảng thuộc tính (initMatrix)"
                 headers={(stateData.initMatrix && INIT_HEADERS) || cache.init?.headers || INIT_HEADERS}
                 rows={stateData.initMatrix || cache.init?.matrix || []}
                 rowLabels={stateData.rowIdsInMatrix || cache.init?.rows || []}
@@ -152,7 +152,7 @@ const TOPSISResultPage = () => {
             )}
             {(stateData.xMatrix || cache.x) && (
               <MatrixTable
-                title="Ma trận quyết định (X matrix)"
+                title="Bảng quyết định (xMatrix)"
                 headers={cache.x?.headers || DECISION_HEADERS}
                 rows={stateData.xMatrix || cache.x?.matrix || []}
                 rowLabels={stateData.rowIdsInMatrix || cache.x?.rows || []}
@@ -160,7 +160,7 @@ const TOPSISResultPage = () => {
             )}
             {(stateData.rMatrix || cache.r) && (
               <MatrixTable
-                title="Ma trận chuẩn hóa R (rMatrix)"
+                title="Bảng quyết định sau khi được chuẩn hóa (rMatrix)"
                 headers={cache.r?.headers || DECISION_HEADERS}
                 rows={stateData.rMatrix || cache.r?.matrix || []}
                 rowLabels={stateData.rowIdsInMatrix || cache.r?.rows || []}
@@ -168,7 +168,7 @@ const TOPSISResultPage = () => {
             )}
             {(stateData.vMatrix || cache.v) && (
               <MatrixTable
-                title="Ma trận trọng số (vMatrix)"
+                title="Bảng quyết định sau chuẩn hóa và tích hợp trọng số (vMatrix)"
                 headers={cache.v?.headers || DECISION_HEADERS}
                 rows={stateData.vMatrix || cache.v?.matrix || []}
                 rowLabels={stateData.rowIdsInMatrix || cache.v?.rows || []}

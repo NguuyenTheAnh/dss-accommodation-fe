@@ -229,12 +229,12 @@ const MatrixFlowPage = () => {
   const currentHeaders = stage === 'init' ? INIT_HEADERS : DECISION_HEADERS;
   const currentTitle =
     stage === 'init'
-      ? 'Ma trận chuẩn hóa (initMatrix)'
+      ? 'Bảng thuộc tính (initMatrix)'
       : stage === 'x'
-      ? 'Ma trận quyết định (X matrix)'
-      : stage === 'r'
-      ? 'Ma trận chuẩn hóa R (rMatrix)'
-      : 'Ma trận trọng số (vMatrix)';
+        ? 'Bảng quyết định (xMatrix)'
+        : stage === 'r'
+          ? 'Bảng quyết định sau khi được chuẩn hóa (rMatrix)'
+          : 'Bảng quyết định sau chuẩn hóa và tích hợp trọng số (vMatrix)';
 
   return (
     <div className="matrix-flow-page">
