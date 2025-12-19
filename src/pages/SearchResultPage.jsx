@@ -107,7 +107,6 @@ const normalizeFiltersForApi = (uiFilters = {}, allRoomTypes = [], allAreaTypeId
   const [minAmenity, maxAmenity] = amenityRange.length === 2 ? amenityRange : DEFAULT_AMENITY_RANGE;
   const [minSecurity, maxSecurity] = securityRange.length === 2 ? securityRange : DEFAULT_SECURITY_RANGE;
 
-  const toMeters = (value) => toNumberOr(value, 0) * 1000;
   const parsedSchoolId = schoolId === undefined || schoolId === null ? undefined : Number(schoolId);
 
   const allRoomTypesFallback = Array.isArray(allRoomTypes) && allRoomTypes.length ? allRoomTypes : [];
@@ -117,8 +116,8 @@ const normalizeFiltersForApi = (uiFilters = {}, allRoomTypes = [], allAreaTypeId
     schoolId: Number.isFinite(parsedSchoolId) ? parsedSchoolId : undefined,
     fromPrice: toNumberOr(minPrice, DEFAULT_PRICE_RANGE[0]),
     toPrice: toNumberOr(maxPrice, DEFAULT_PRICE_RANGE[1]),
-    fromDistance: toMeters(minDistance),
-    toDistance: toMeters(maxDistance),
+    fromDistance: toNumberOr(minDistance, DEFAULT_DISTANCE_RANGE[0]),
+    toDistance: toNumberOr(maxDistance, DEFAULT_DISTANCE_RANGE[1]),
     fromArea: toNumberOr(minArea, DEFAULT_AREA_RANGE[0]),
     toArea: toNumberOr(maxArea, DEFAULT_AREA_RANGE[1]),
     fromSecurityPoints: toNumberOr(minSecurity, DEFAULT_SECURITY_RANGE[0]),
