@@ -53,14 +53,14 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
         { value: ROOM_TYPE.SHARED, label: ROOM_TYPE_LABELS[ROOM_TYPE.SHARED] }
     ];
 
-    const amenitiesList = [
-        { value: 'wifi', label: 'WiFi' },
-        { value: 'parking', label: 'Chỗ đậu xe' },
-        { value: 'ac', label: 'Điều hòa' },
-        { value: 'washing', label: 'Máy giặt' },
-        { value: 'kitchen', label: 'Bếp' },
-        { value: 'security', label: 'An ninh 24/7' }
-    ];
+    // const amenitiesList = [
+    //     { value: 'wifi', label: 'WiFi' },
+    //     { value: 'parking', label: 'Chỗ đậu xe' },
+    //     { value: 'ac', label: 'Điều hòa' },
+    //     { value: 'washing', label: 'Máy giặt' },
+    //     { value: 'kitchen', label: 'Bếp' },
+    //     { value: 'security', label: 'An ninh 24/7' }
+    // ];
 
     const formatPrice = (value) => {
         return `${(value / 1000000).toFixed(1)}tr`;
@@ -133,15 +133,15 @@ const SidebarFilter = ({ filters = {}, onFilterChange, onReset }) => {
                     <Slider
                         range
                         min={0}
-                        max={10}
-                        step={0.5}
-                        value={filters.distanceRange || [0, 5]}
+                        max={100}
+                        step={5}
+                        value={filters.distanceRange || [0, 50]}
                         onChange={(value) => handleFilterUpdate('distanceRange', value)}
-                        marks={{ 0: '0km', 5: '5km', 10: '10km' }}
+                        marks={{ 0: '0km', 50: '50km', 100: '100km' }}
                         className="custom-slider"
                     />
                     <div className="range-display">
-                        {(filters.distanceRange || [0, 5])[0]}km - {(filters.distanceRange || [0, 5])[1]}km
+                        {(filters.distanceRange || [0, 50])[0]}km - {(filters.distanceRange || [0, 50])[1]}km
                     </div>
                 </div>
 

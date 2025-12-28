@@ -81,8 +81,17 @@ const HomePage = () => {
     setLoading(false);
   }, []);
 
-  const handleSearch = (searchParams) => {
-    navigate('/search', { state: { searchParams, filters } });
+  const handleSearch = (searchParams = {}) => {
+    const schoolIdRaw = searchParams?.schoolId ?? searchParams?.school;
+    const schoolId = Number.isFinite(Number(schoolIdRaw)) ? Number(schoolIdRaw) : undefined;
+    const nextFilters =
+      schoolId === undefined
+        ? { ...filters }
+        : { ...filters, schoolId };
+    setFilters(nextFilters);
+    navigate('/search', {
+      state: { searchParams: { ...searchParams, schoolId }, filters: nextFilters },
+    });
   };
 
   const handleFilterClick = () => {

@@ -7,7 +7,7 @@ import './FilterModal.css';
 
 const DEFAULT_FILTERS = {
     priceRange: [1000000, 10000000],
-    distanceRange: [0, 5],
+    distanceRange: [0, 50],
     areaRange: [15, 50],
     roomType: undefined,
     areaTypeId: undefined,
@@ -104,11 +104,11 @@ const FilterModal = ({ visible, onClose, onApply, initialFilters = {} }) => {
                     <Slider
                         range
                         min={0}
-                        max={10}
-                        step={0.5}
+                        max={100}
+                        step={5}
                         value={filters.distanceRange}
                         onChange={(value) => handleUpdate('distanceRange', value)}
-                        marks={{ 0: '0km', 5: '5km', 10: '10km' }}
+                        marks={{ 0: '0km', 50: '50km', 100: '100km' }}
                         className="custom-slider"
                     />
                     <div className="range-display">

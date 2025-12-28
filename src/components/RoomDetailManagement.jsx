@@ -10,7 +10,7 @@ import L from 'leaflet';
 
 import 'leaflet/dist/leaflet.css';
 
-import { getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi, getAllSurveysApi } from '../util/api';
+import { getAllSurveyQuestionsApi, getAllAreaTypesApi, uploadFilesApi, getAllSurveysApi, getSurveyAnswersByRoomIdApi } from '../util/api';
 
 import { ROOM_TYPE, ROOM_TYPE_LABELS, ROOM_STATUS, ROOM_STATUS_LABELS } from '../util/constants';
 
@@ -106,6 +106,67 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     };
 
+    const extractOtherImageUrls = (detail) => {
+        if (!detail) return [];
+        const urls = [];
+
+        if (Array.isArray(detail.roomNotCoverImageUrls)) {
+            urls.push(...detail.roomNotCoverImageUrls.filter(Boolean));
+        }
+
+        if (Array.isArray(detail.roomNotCoverImages)) {
+            detail.roomNotCoverImages.forEach((img) => {
+                if (!img) return;
+                const candidate =
+                    typeof img === 'string'
+                        ? img
+                        : img.roomNotCoverImageUrl || img.url || img.roomImageUrl || '';
+                if (candidate) {
+                    urls.push(candidate);
+                }
+            });
+        }
+
+        return urls;
+    };
+
+    const extractOtherImageObjects = (detail) => {
+        if (!detail) return [];
+        const images = [];
+
+        if (Array.isArray(detail.roomNotCoverImages)) {
+            detail.roomNotCoverImages.forEach((img, index) => {
+                const url =
+                    typeof img === 'string'
+                        ? img
+                        : img.roomNotCoverImageUrl || img.url || img.roomImageUrl || '';
+                const id =
+                    typeof img === 'string'
+                        ? undefined
+                        : img.roomNotCoverImageId || img.id;
+                if (url) {
+                    images.push({
+                        id: id ?? `other-${index}`,
+                        url: buildImageUrl(url)
+                    });
+                }
+            });
+        }
+
+        if (Array.isArray(detail.roomNotCoverImageUrls)) {
+            detail.roomNotCoverImageUrls.forEach((url, index) => {
+                if (url) {
+                    images.push({
+                        id: `url-${index}`,
+                        url: buildImageUrl(url)
+                    });
+                }
+            });
+        }
+
+        return images;
+    };
+
 
 
     useEffect(() => {
@@ -119,6 +180,18 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
             setRoomDetail(room);
 
             setSurveyAnswers(room.surveyAnswers || []);
+            fetchRoomSurveyAnswers(room.id);
+
+            const coverUrl = room.roomCoverImageUrl || room.roomCoverImage?.url;
+            setCoverImage(
+                coverUrl
+                    ? {
+                        id: room.roomCoverImageId || room.roomCoverImage?.id,
+                        url: buildImageUrl(coverUrl)
+                    }
+                    : null
+            );
+            setOtherImages(extractOtherImageObjects(room));
 
             if (isAddMode || isEditMode) {
 
@@ -711,6 +784,36 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
     };
 
+    const fetchRoomSurveyAnswers = async (roomId) => {
+        if (!roomId) return;
+        try {
+            const res = await getSurveyAnswersByRoomIdApi(roomId);
+            if (res.code !== '00' || !res.data?.surveyAnswers) {
+                return;
+            }
+            const normalizedAnswers = res.data.surveyAnswers.map((ans) => ({
+                ...ans,
+                avgPoint: ans.avgPoint ?? ans.point ?? 0,
+            }));
+            setSurveyAnswers(normalizedAnswers);
+
+            // hydrate survey form values if available
+            const values = {};
+            normalizedAnswers.forEach((ans) => {
+                if (ans.surveyQuestionId) {
+                    values[`question_${ans.surveyQuestionId}`] = ans.point ?? ans.avgPoint ?? 0;
+                }
+            });
+            surveyForm.setFieldsValue(values);
+        } catch (error) {
+            console.error('Error fetching room survey answers:', error);
+        }
+    };
+
+
+
+    const otherImageUrls = extractOtherImageUrls(roomDetail);
+
 
 
     // Tab 1: Room Information
@@ -1264,9 +1367,9 @@ const RoomDetailManagement = ({ room, onBack, onSave, mode = 'view' }) => {
 
                             </div>
 
-                            {(roomDetail?.roomNotCoverImageUrls?.length > 0 || roomDetail?.roomNotCoverImages?.length > 0) && (
+                            {otherImageUrls.length > 0 && (
                                 <div className="thumbnail-images">
-                                    {[...(roomDetail.roomNotCoverImageUrls || []), ...(roomDetail.roomNotCoverImages || []).map((img) => img.url || img)].map((img, index) => (
+                                    {otherImageUrls.map((img, index) => (
                                         <Image
                                             key={index}
                                             src={buildImageUrl(img)}

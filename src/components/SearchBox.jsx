@@ -7,6 +7,7 @@ import './SearchBox.css';
 const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
     const [selectedSchool, setSelectedSchool] = useState();
     const [schools, setSchools] = useState([]);
+    const [savingDistance, setSavingDistance] = useState(false);
 
     useEffect(() => {
         fetchSchools();
@@ -37,20 +38,26 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
     };
 
     const handleSearch = () => {
+        if (savingDistance) {
+            message.info('Vui lòng đợi hệ thống lưu khoảng cách');
+            return;
+        }
         if (!selectedSchool) {
             message.warning('Vui lòng chọn trường trước khi tìm kiếm');
             return;
         }
         if (onSearch) {
             onSearch({
-                school: selectedSchool
+                schoolId: selectedSchool
             });
         }
     };
 
     useEffect(() => {
+        let isCancelled = false;
         const persistAndSave = async () => {
             if (!selectedSchool) return;
+            setSavingDistance(true);
             try {
                 localStorage.setItem('selectedSchoolId', selectedSchool);
                 const res = await saveDistanceApi(Number(selectedSchool));
@@ -59,9 +66,16 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
                 }
             } catch (e) {
                 console.warn('Cannot persist selected school', e);
+            } finally {
+                if (!isCancelled) {
+                    setSavingDistance(false);
+                }
             }
         };
         persistAndSave();
+        return () => {
+            isCancelled = true;
+        };
     }, [selectedSchool]);
 
     const handleKeyPress = (e) => {
@@ -106,6 +120,8 @@ const SearchBox = ({ onSearch, onFilterClick, variant = 'hero' }) => {
                     type="primary"
                     size="large"
                     icon={<SearchOutlined />}
+                    loading={savingDistance}
+                    disabled={!selectedSchool || savingDistance}
                     onClick={handleSearch}
                 >
                     Tìm kiếm

@@ -263,6 +263,15 @@ const getWeightCalculateApi = (weights = [], rMatrix = []) => {
 }
 
 /**
+ * Get survey answers of a room by roomId
+ * @param {number} roomId
+ */
+const getSurveyAnswersByRoomIdApi = (roomId) => {
+    const URL_API = "/api/rooms/survey-answer-by-room-id";
+    return axios.post(URL_API, { roomId });
+}
+
+/**
  * Save distance for selected school
  * @param {number} schoolId
  */
@@ -351,6 +360,7 @@ export {
     getDecisionTableApi,
     getNormalizeDecisionTableApi,
     getWeightCalculateApi,
+    getSurveyAnswersByRoomIdApi,
     saveDistanceApi,
     getTopsisResultApi,
 

@@ -9,7 +9,7 @@ import { ROOM_TYPE } from '../util/constants';
 import './SearchResultPage.css';
 
 const DEFAULT_PRICE_RANGE = [1000000, 10000000];
-const DEFAULT_DISTANCE_RANGE = [0, 5];
+const DEFAULT_DISTANCE_RANGE = [0, 50];
 const DEFAULT_AREA_RANGE = [15, 50];
 const DEFAULT_AMENITY_RANGE = [1, 5];
 const DEFAULT_SECURITY_RANGE = [1, 5];
@@ -138,7 +138,16 @@ const normalizeFiltersForApi = (uiFilters = {}, allRoomTypes = [], allAreaTypeId
 const SearchResultPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const filtersFromNav = useMemo(() => sanitizeUiFilters(location.state?.filters || {}), [location.state]);
+  const filtersFromNav = useMemo(() => {
+    const schoolFromSearch =
+      location.state?.searchParams?.schoolId ?? location.state?.searchParams?.school;
+    return sanitizeUiFilters({
+      ...(location.state?.filters || {}),
+      ...(schoolFromSearch === undefined || schoolFromSearch === null
+        ? {}
+        : { schoolId: schoolFromSearch }),
+    });
+  }, [location.state]);
 
   const [filters, setFilters] = useState(() =>
     sanitizeUiFilters({
